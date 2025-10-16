@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Jaro:ital,opsz,wght@0,6..12,400..900;1,6..12,400..900&display=swap');
+
+* {
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+.pageContainer {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden; /* <-- 1. Забороняємо скрол для всієї сторінки */
+}
+
+.leftPanel {
+  flex: 0 0 45%;
+  height: 100%;
+}
+
+.patternImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rightPanel {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  background-color: #ffffff;
+  overflow-y: auto;
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  justify-content: center;
+}
+
+.header h2 {
+  font-weight: 500;
+  font-size: 1.5rem;
+  color: #333;
+  font-family: 'Jaro', sans-serif;
+}
+
+.logo {
+  height: 62px;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* ... решта стилів залишається без змін ... */
+
+.inputGroup {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.inputGroup label {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background-color: white;
+  padding: 0 5px;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.clearIcon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: 300;
+}
+
+.forgotLink {
+  align-self: flex-start;
+  margin-bottom: 25px;
+  color: #B93838;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.loginButton {
+  background-color: #B93838;
+  color: white;
+  padding: 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.loginButton:hover {
+  background-color: #a03030;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #aaa;
+  margin: 25px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.divider span {
+  padding: 0 15px;
+}
+
+.googleButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px;
+  background-color: #F3F3F3;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.googleButton:hover {
+  background-color: #e9e9e9;
+}
+
+.googleIcon {
+  height: 20px;
+}
+
+.signupText {
+  text-align: center;
+  margin-top: 30px;
+  color: #666;
+}
+
+.signupText a {
+  color: #B93838;
+  text-decoration: none;
+  font-weight: bold;
+}
