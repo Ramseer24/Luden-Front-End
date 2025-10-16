@@ -2,8 +2,15 @@ import styles from './styles.module.css';
 import loginPattern from '../../assets/login-pattern.jpg';
 import ludenLogo from '../../assets/luden-logo.svg';
 import googleIcon from '../../assets/google-icon.png';
+import { useNavigate } from 'react-router-dom';
 
 export const LoginPage = () => {
+    const navigate = useNavigate();
+
+    const handleSignUpClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        navigate('/registration');
+    };
   return (
     <div className={styles.pageContainer}>
       {/* Ліва панель із зображенням */}
@@ -48,9 +55,9 @@ export const LoginPage = () => {
             Continue with Google
           </button>
 
-          <p className={styles.signupText}>
-            Don't have an account? <a href="#">Sign Up</a>
-          </p>
+            <p className={styles.signupText}>
+                Don't have an account? <a href="#" onClick={handleSignUpClick}>Sign Up</a>
+            </p>
         </div>
       </div>
     </div>

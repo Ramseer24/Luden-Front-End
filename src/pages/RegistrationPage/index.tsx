@@ -2,8 +2,15 @@ import styles from './styles.module.css';
 import loginPattern from '../../assets/login-pattern.jpg';
 import ludenLogo from '../../assets/luden-logo.svg';
 import googleIcon from '../../assets/google-icon.png';
+import { useNavigate } from 'react-router-dom';
 
 export const RegistrationPage = () => {
+    const navigate = useNavigate();
+
+    const handleLoginClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        navigate('/');
+    };
   return (
     <div className={styles.pageContainer}>
       
@@ -53,9 +60,9 @@ export const RegistrationPage = () => {
             Continue with Google
           </button>
 
-          <p className={styles.signupText}>
-            Already have an account? <a href="#">Log in</a>
-          </p>
+            <p className={styles.signupText}>
+                Already have an account? <a href="#" onClick={handleLoginClick}>Log in</a>
+            </p>
         </div>
       </div>
     </div>

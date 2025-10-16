@@ -1,17 +1,18 @@
-import { useState } from 'react'
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { RegistrationPage } from './pages/RegistrationPage';
 
-// Імпортуємо стилі
 import './App.css';
 
 function App() {
-  return (
-   
-    <LoginPage />
-    // <RegistrationPage /> 
-  );
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<LoginPage />} />
+                <Route path="/registration" element={<RegistrationPage />} />
+            </Routes>
+        </BrowserRouter>
+    );
 }
 
 export default App;
-

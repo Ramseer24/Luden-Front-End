@@ -30,7 +30,7 @@
   align-items: center;
   padding: 40px;
   background-color: #ffffff;
-  overflow-y: auto; /* <-- 2. Дозволяємо скрол тільки тут, якщо потрібно */
+  overflow-y: auto;
 }
 
 .formContainer {
@@ -56,7 +56,7 @@
 }
 
 .logo {
-  height: 42px; /* Збільшений розмір */
+  height: 62px;
 }
 
 .subtitle {
