@@ -121,12 +121,15 @@
     gap: 10px;
     font-size: 16px;
 }
+.navButton:hover {
+    background-color: #e0e0e0;
+}
 .navButton svg {
     font-size: 20px;
     color: #B93838;
 }
 .navButton.active {
-    background: #e0e0e0;
+    background: #ffffff;
     border-color: #ccc;
 }
 
