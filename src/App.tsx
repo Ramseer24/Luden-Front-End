@@ -4,14 +4,16 @@ import { RegistrationPage } from './pages/RegistrationPage';
 import { ProfilePage } from './pages/ProfilePage';
 
 import './App.css';
+import {ForgotPasswordPage} from "./pages/ForgotPasswordPage";
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<ProfilePage />} />
+                <Route path="/" element={<LoginPage />} />
                 <Route path="/registration" element={<RegistrationPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/resetPass" element={<ForgotPasswordPage />} />
             </Routes>
         </BrowserRouter>
     );

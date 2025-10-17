@@ -15,6 +15,20 @@ export const LoginPage = () => {
         navigate('/registration');
     };
 
+    const handleForgotPassword = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        navigate('/resetPass');
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (email && password) {
+            navigate('/profile');
+        } else {
+            alert('Please fill in both email and password fields.');
+        }
+    };
+
     const clearInput = (inputId: string) => {
         if (inputId === 'email') {
             setEmail('');
@@ -35,7 +49,7 @@ export const LoginPage = () => {
                         <img src={ludenLogo} alt="Luden Logo" className={styles.logo} />
                     </div>
                     <p className={styles.subtitle}>Build your collection of legendary games - start now!</p>
-                    <form className={styles.form}>
+                    <form className={styles.form} onSubmit={handleSubmit}>
                         <div className={styles.inputGroup}>
                             <label htmlFor="email">Email</label>
                             <input
@@ -49,8 +63,8 @@ export const LoginPage = () => {
                                 className={styles.clearIcon}
                                 onClick={() => clearInput('email')}
                             >
-                &times;
-              </span>
+                                &times;
+                            </span>
                         </div>
                         <div className={styles.inputGroup}>
                             <label htmlFor="password">Password</label>
@@ -65,10 +79,10 @@ export const LoginPage = () => {
                                 className={styles.clearIcon}
                                 onClick={() => clearInput('password')}
                             >
-                &times;
-              </span>
+                                &times;
+                            </span>
                         </div>
-                        <a href="#" className={styles.forgotLink}>Forgot password?</a>
+                        <a href="#" className={styles.forgotLink} onClick={handleForgotPassword}>Forgot password?</a>
                         <button type="submit" className={styles.loginButton}>Log in</button>
                     </form>
                     <div className={styles.divider}>

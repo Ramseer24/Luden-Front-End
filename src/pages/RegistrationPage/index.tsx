@@ -16,6 +16,16 @@ export const RegistrationPage = () => {
         navigate('/');
     };
 
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Basic validation example
+        if (email && password && password === confirmPassword) {
+            navigate('/'); // Redirect to home page after successful sign-up
+        } else {
+            alert('Please fill all fields and ensure passwords match.');
+        }
+    };
+
     const clearInput = (inputId: string) => {
         if (inputId === 'email') {
             setEmail('');
@@ -38,7 +48,7 @@ export const RegistrationPage = () => {
                         <img src={ludenLogo} alt="Luden Logo" className={styles.logo} />
                     </div>
                     <p className={styles.subtitle}>Build your collection of legendary games - start now!</p>
-                    <form className={styles.form}>
+                    <form className={styles.form} onSubmit={handleSubmit}>
                         <div className={styles.inputGroup}>
                             <label htmlFor="email">Email</label>
                             <input
