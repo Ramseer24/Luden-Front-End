@@ -15,6 +15,11 @@ export const LoginPage = () => {
         navigate('/registration');
     };
 
+    const handleForgotPassword = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        navigate('/resetPass');
+    };
+
     const clearInput = (inputId: string) => {
         if (inputId === 'email') {
             setEmail('');
@@ -49,8 +54,8 @@ export const LoginPage = () => {
                                 className={styles.clearIcon}
                                 onClick={() => clearInput('email')}
                             >
-                &times;
-              </span>
+                                &times;
+                            </span>
                         </div>
                         <div className={styles.inputGroup}>
                             <label htmlFor="password">Password</label>
@@ -65,10 +70,10 @@ export const LoginPage = () => {
                                 className={styles.clearIcon}
                                 onClick={() => clearInput('password')}
                             >
-                &times;
-              </span>
+                                &times;
+                            </span>
                         </div>
-                        <a href="#" className={styles.forgotLink}>Forgot password?</a>
+                        <a href="#" className={styles.forgotLink} onClick={handleForgotPassword}>Forgot password?</a>
                         <button type="submit" className={styles.loginButton}>Log in</button>
                     </form>
                     <div className={styles.divider}>
