@@ -1,15 +1,17 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { type User } from '../../models/User';
 import styles from './styles.module.css';
 import loginPattern from '../../assets/login-pattern.jpg';
 import ludenLogo from '../../assets/luden-logo.svg';
 import googleIcon from '../../assets/google-icon.png';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 
 export const RegistrationPage = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [nickname, setNickname] = useState('');
 
     const handleLoginClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
@@ -18,11 +20,29 @@ export const RegistrationPage = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Basic validation example
-        if (email && password && password === confirmPassword) {
-            navigate('/'); // Redirect to home page after successful sign-up
+        // Basic validation
+        if (email && password && confirmPassword && nickname) {
+            if (password === confirmPassword) {
+                // Create a new User object based on the User model
+                const newUser: User = {
+                    id: Math.floor(Math.random() * 10000) + 1, // Generate a random ID for demo purposes
+                    nickname: nickname.startsWith('@') ? nickname : `@${nickname}`, // Ensure nickname starts with @
+                    email,
+                    password, // In a real app, this would be hashed
+                    avatar: null,
+                    games: [],
+                    bonuses: [],
+                    friends: [],
+                };
+                // Store user data in localStorage to simulate registration
+                localStorage.setItem('token', 'mock-token'); // Mock token for authentication
+                localStorage.setItem('user', JSON.stringify(newUser)); // Store user data
+                navigate('/'); // Redirect to home page after successful sign-up
+            } else {
+                alert('Passwords do not match.');
+            }
         } else {
-            alert('Please fill all fields and ensure passwords match.');
+            alert('Please fill in all fields.');
         }
     };
 
@@ -33,6 +53,8 @@ export const RegistrationPage = () => {
             setPassword('');
         } else if (inputId === 'confirmPassword') {
             setConfirmPassword('');
+        } else if (inputId === 'nickname') {
+            setNickname('');
         }
     };
 
@@ -50,6 +72,22 @@ export const RegistrationPage = () => {
                     <p className={styles.subtitle}>Build your collection of legendary games - start now!</p>
                     <form className={styles.form} onSubmit={handleSubmit}>
                         <div className={styles.inputGroup}>
+                            <label htmlFor="nickname">Nickname</label>
+                            <input
+                                type="text"
+                                id="nickname"
+                                placeholder="Nickname"
+                                value={nickname}
+                                onChange={(e) => setNickname(e.target.value)}
+                            />
+                            <span
+                                className={styles.clearIcon}
+                                onClick={() => clearInput('nickname')}
+                            >
+                                &times;
+                            </span>
+                        </div>
+                        <div className={styles.inputGroup}>
                             <label htmlFor="email">Email</label>
                             <input
                                 type="email"
@@ -62,8 +100,8 @@ export const RegistrationPage = () => {
                                 className={styles.clearIcon}
                                 onClick={() => clearInput('email')}
                             >
-                &times;
-              </span>
+                                &times;
+                            </span>
                         </div>
                         <div className={styles.inputGroup}>
                             <label htmlFor="password">Password</label>
@@ -78,8 +116,8 @@ export const RegistrationPage = () => {
                                 className={styles.clearIcon}
                                 onClick={() => clearInput('password')}
                             >
-                &times;
-              </span>
+                                &times;
+                            </span>
                         </div>
                         <div className={styles.inputGroup}>
                             <label htmlFor="confirmPassword">Confirm password</label>
@@ -94,8 +132,8 @@ export const RegistrationPage = () => {
                                 className={styles.clearIcon}
                                 onClick={() => clearInput('confirmPassword')}
                             >
-                &times;
-              </span>
+                                &times;
+                            </span>
                         </div>
                         <button type="submit" className={styles.loginButton}>Sign Up</button>
                     </form>

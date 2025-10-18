@@ -1,4 +1,4 @@
-.profilePage {
+.editProfilePage {
     min-height: 100vh;
     padding: 20px;
     font-family: 'Inter', sans-serif;
@@ -46,54 +46,6 @@
     padding: 12px 24px;
     font-size: 18px;
     margin-left: 130px;
-}
-
-.headerIcons {
-    display: flex;
-    gap: 10px;
-}
-
-.settingsDropdown {
-    position: relative;
-}
-
-.switchAccountDropdown {
-    position: relative;
-}
-
-.dropdownMenu {
-    position: absolute;
-    top: 40px;
-    right: 0;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    width: 200px;
-}
-
-.dropdownItem {
-    padding: 10px 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 16px;
-    color: #333;
-    transition: background-color 0.2s ease;
-}
-
-.dropdownItem:hover {
-    background-color: #f0f0f0;
-}
-
-.currentAccount {
-    font-weight: bold;
-    background-color: #f8f8f8;
 }
 
 .userCard {
@@ -166,100 +118,72 @@
     color: white;
 }
 
-.navigation {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin: 20px 0;
-}
-
-.navButton {
-    background: none;
-    border: none;
-    font-size: 18px;
-    color: #333;
-    cursor: pointer;
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: color 0.2s ease;
-}
-
-.navButton:hover {
-    color: #B93838;
-}
-
-.navButton.active {
-    color: #B93838;
-    border-bottom: 2px solid #B93838;
-}
-
-.contentArea {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.gameGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-}
-
-.gameCard {
+.formContainer {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
     background: #fff;
     border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-.gameCard:hover {
-    transform: translateY(-5px);
-}
-
-.addGameCard {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #f0f0f0;
-    color: #333;
-    cursor: pointer;
-}
-
-.plusIcon {
-    font-size: 40px;
-    margin-bottom: 10px;
-}
-
-.bonusList {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.friendGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-}
-
-.emptyState {
-    text-align: center;
-    padding: 40px;
-    color: #666;
-}
-
-.emptyIcon {
-    font-size: 50px;
-    color: #B93838;
+.formGroup {
     margin-bottom: 20px;
 }
 
-.emptyHint {
-    font-size: 14px;
-    color: #999;
+.label {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.input:focus {
+    border-color: #B93838;
+}
+
+.resetPasswordButton {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    color: #333;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s ease;
+}
+
+.resetPasswordButton:hover {
+    background-color: #e0e0e0;
+}
+
+.saveButton {
+    background: #B93838;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+    margin: 20px auto;
+    width: fit-content;
+}
+
+.saveButton:hover {
+    background-color: #a32f2f;
 }

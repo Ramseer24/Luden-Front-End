@@ -1,14 +1,27 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { type User } from '../../models/User';
 import styles from './styles.module.css';
 import loginPattern from '../../assets/login-pattern.jpg';
 import ludenLogo from '../../assets/luden-logo.svg';
 import googleIcon from '../../assets/google-icon.png';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 
 export const LoginPage = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+    // Mock user data for authentication simulation
+    const mockUser: User = {
+        id: 1,
+        nickname: '@Nickname',
+        email: 'user@example.com',
+        password: 'securepassword',
+        avatar: null,
+        games: [],
+        bonuses: [],
+        friends: [],
+    };
 
     const handleSignUpClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
@@ -23,7 +36,15 @@ export const LoginPage = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (email && password) {
-            navigate('/profile');
+            // Simulate authentication by checking against mockUser
+            if (email === mockUser.email && password === mockUser.password) {
+                // Store user data in localStorage to simulate successful login
+                localStorage.setItem('token', 'mock-token'); // Mock token for authentication
+                localStorage.setItem('user', JSON.stringify(mockUser)); // Store user data
+                navigate('/profile');
+            } else {
+                alert('Invalid email or password.');
+            }
         } else {
             alert('Please fill in both email and password fields.');
         }
