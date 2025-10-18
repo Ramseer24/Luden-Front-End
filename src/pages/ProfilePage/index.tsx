@@ -16,25 +16,28 @@ import {
     MdSwitchAccount,
 } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
+import { GameCard, BonusCard, FriendCard, FavoriteGameCard } from '../../components';
+import type { Game, Bonus, Friend } from '../../models';
+import { getTextColor } from '../../utils/colorUtils';
 
 import avatarFriend from '../../assets/avatar-cat.png';
 import gameCyberpunk from '../../assets/game-cyberpunk.jpg';
 import gameSilksong from '../../assets/game-silksong.jpg';
 import gamePeak from '../../assets/game-peak.jpg';
 
-const games = [
-    { title: 'Cyberpunk 2077', image: gameCyberpunk },
-    { title: 'Hollow Knight: Silksong', image: gameSilksong },
-    { title: 'PEAK', image: gamePeak },
+const initialGames: Game[] = [
+    { id: 1, title: 'Cyberpunk 2077', image: gameCyberpunk, price: '1399 ₴', genre: 'Open World', isFavorite: false },
+    { id: 2, title: 'Hollow Knight: Silksong', image: gameSilksong, price: '899 ₴', genre: 'Action', isFavorite: false },
+    { id: 3, title: 'PEAK', image: gamePeak, price: '1599 ₴', genre: 'Adventure', isFavorite: false },
 ];
 
-const bonuses = [
+const bonuses: Bonus[] = [
     { id: 1, name: '10% Discount', description: 'Valid until Dec 2025' },
     { id: 2, name: '50 Coins', description: 'Earned from last purchase' },
     { id: 3, name: 'Free Trial', description: '1 week extension' },
 ];
 
-const friends = [
+const friends: Friend[] = [
     { id: 1, name: '@Friend1', avatar: avatarFriend },
     { id: 2, name: '@Friend2', avatar: avatarFriend },
     { id: 3, name: '@Friend3', avatar: avatarFriend },
@@ -48,11 +51,16 @@ export const ProfilePage = () => {
     const settingsRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('My Library');
+    const [games, setGames] = useState<Game[]>(initialGames);
 
     const { data: colorPalette } = usePalette(userAvatar || '', 2, 'hex', {
         crossOrigin: 'Anonymous',
         quality: 10,
     });
+
+    // Calculate text color based on the dominant color
+    const dominantColor = colorPalette?.[0] || '#888';
+    const textColor = getTextColor(dominantColor);
 
     const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -85,6 +93,16 @@ export const ProfilePage = () => {
         navigate('/');
     };
 
+    const handleToggleFavorite = (gameId: number) => {
+        setGames((prevGames) =>
+            prevGames.map((game) =>
+                game.id === gameId ? { ...game, isFavorite: !game.isFavorite } : game
+            )
+        );
+    };
+
+    const favoriteGames = games.filter((game) => game.isFavorite);
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
@@ -98,6 +116,15 @@ export const ProfilePage = () => {
 
     return (
         <div className={styles.profilePage}>
+            {/* Blur background */}
+            <div
+                className={styles.blurBackground}
+                style={{
+                    background: colorPalette
+                        ? `linear-gradient(135deg, ${colorPalette[0]}, ${colorPalette[1]})`
+                        : 'linear-gradient(135deg, #888, #555)',
+                }}
+            />
             <input
                 type="file"
                 ref={fileInputRef}
@@ -152,7 +179,7 @@ export const ProfilePage = () => {
                             <MdPhotoCamera className={styles.cameraIcon} />
                         </div>
                     </div>
-                    <span className={styles.nickname}>@Nickname</span>
+                    <span className={styles.nickname} style={{ color: textColor }}>@Nickname</span>
                 </div>
 
                 <nav className={styles.navigation}>
@@ -185,13 +212,8 @@ export const ProfilePage = () => {
                 <div className={styles.contentArea}>
                     {activeTab === 'My Library' && (
                         <div className={styles.gameGrid}>
-                            {games.map((game, index) => (
-                                <div key={index} className={styles.gameCard}>
-                                    <img src={game.image} alt={game.title} style={{ width: '100%', height: '260px', objectFit: 'cover' }} />
-                                    <div className={styles.gameInfo} style={{ background: 'none', padding: '10px', color: '#000' }}>
-                                        <p style={{ margin: '0' }}>{game.title}</p>
-                                    </div>
-                                </div>
+                            {games.map((game) => (
+                                <GameCard key={game.id} game={game} />
                             ))}
                             <div className={`${styles.gameCard} ${styles.addGameCard}`}>
                                 <span className={styles.plusIcon}>+</span>
@@ -202,26 +224,30 @@ export const ProfilePage = () => {
                     {activeTab === 'Bonuses' && (
                         <div className={styles.bonusList}>
                             {bonuses.map((bonus) => (
-                                <div key={bonus.id} className={styles.bonusItem}>
-                                    <span className={styles.bonusName}>{bonus.name}</span>
-                                    <span className={styles.bonusDescription}>{bonus.description}</span>
-                                </div>
+                                <BonusCard key={bonus.id} bonus={bonus} />
                             ))}
                         </div>
                     )}
                     {activeTab === 'Friends' && (
                         <div className={styles.friendGrid}>
                             {friends.map((friend) => (
-                                <div key={friend.id} className={styles.friendCard}>
-                                    <img src={friend.avatar} alt={friend.name} className={styles.friendAvatar} />
-                                    <p>{friend.name}</p>
-                                </div>
+                                <FriendCard key={friend.id} friend={friend} />
                             ))}
                         </div>
                     )}
                     {activeTab === 'Favorites' && (
                         <div className={styles.gameGrid}>
-
+                            {favoriteGames.length > 0 ? (
+                                favoriteGames.map((game) => (
+                                    <FavoriteGameCard key={game.id} game={game} onToggleFavorite={handleToggleFavorite} />
+                                ))
+                            ) : (
+                                <div className={styles.emptyState}>
+                                    <MdStar className={styles.emptyIcon} />
+                                    <p>No favorite games yet</p>
+                                    <p className={styles.emptyHint}>Add games to favorites from your library</p>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

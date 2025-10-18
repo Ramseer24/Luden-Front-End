@@ -2,8 +2,20 @@
     min-height: 100vh;
     padding: 20px;
     font-family: 'Inter', sans-serif;
-    background-color: #ffffff;
+    position: relative;
     color: #333;
+}
+
+.blurBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    filter: blur(100px);
+    opacity: 0.3;
+    transition: background 0.8s ease;
 }
 
 .header {
@@ -84,6 +96,8 @@
     font-size: 24px;
     font-weight: bold;
     margin-left: 20px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: color 0.3s ease;
 }
 
 .avatarOverlay {
@@ -156,63 +170,14 @@
     margin: 0 auto;
 }
 
+/* Game card styles moved to GameCard component */
+
 .gameCard {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 12px;
     overflow: hidden;
     transition: transform 0.2s ease-in-out;
     position: relative;
-}
-
-.gameCard:hover {
-    transform: scale(1.05);
-}
-
-.gameInfo {
-    padding: 15px;
-    text-align: center;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.favoriteInfo {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(255, 255, 255, 0.7);
-    padding: 10px;
-    border-radius: 8px 8px 0 0;
-    text-align: center;
-    color: #000;
-}
-
-.favoriteInfo span {
-    display: block;
-    margin: 2px 0;
-}
-
-.gameInfo p {
-    margin: 5px 0;
-    font-weight: 500;
-}
-
-.gamePrice {
-    font-size: 14px;
-    color: #ccc;
-}
-
-.gameGenre {
-    font-size: 12px;
-    color: #bbb;
-}
-
-.starIcon {
-    color: #B93838;
-    font-size: 20px;
-    margin-bottom: 5px;
 }
 
 .addGameCard {
@@ -240,23 +205,7 @@
     margin: 0 auto;
 }
 
-.bonusItem {
-    display: flex;
-    justify-content: space-between;
-    padding: 15px;
-    background: #f9f9f9;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    color: #333;
-}
-
-.bonusName {
-    font-weight: bold;
-}
-
-.bonusDescription {
-    color: #666;
-}
+/* Bonus card styles moved to BonusCard component */
 
 .friendGrid {
     display: grid;
@@ -266,22 +215,7 @@
     margin: 0 auto;
 }
 
-.friendCard {
-    text-align: center;
-}
-
-.friendAvatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 10px;
-}
-
-.friendCard p {
-    margin: 0;
-    color: #333;
-}
+/* Friend card styles moved to FriendCard component */
 
 .favoriteList {
     max-width: 600px;
@@ -332,4 +266,30 @@
 
 .dropdownItem:hover {
     background-color: #f6f6f6;
+}
+
+.emptyState {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.emptyIcon {
+    font-size: 64px;
+    color: #ccc;
+    margin-bottom: 16px;
+}
+
+.emptyState p {
+    margin: 4px 0;
+    font-size: 18px;
+}
+
+.emptyHint {
+    font-size: 14px !important;
+    color: #999;
 }
