@@ -3,15 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import { usePalette } from 'color-thief-react';
 import { MdArrowBack, MdPhotoCamera, MdSave } from 'react-icons/md';
 import { getTextColor } from '../../utils/colorUtils';
-import { type User } from '../../models/User';
 import styles from './styles.module.css';
+
+// User interface based on the Users table
+interface User {
+    id: number;
+    username: string;
+    email: string;
+    password_hash: string;
+    role: 'user' | 'admin' | 'moderator';
+    created_at: Date;
+    updated_at?: Date;
+}
 
 export const EditProfilePage = () => {
     const [user, setUser] = useState<User | null>(null);
+    const [avatar, setAvatar] = useState<string | null>(null); // Separate state for avatar
     const fileInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
 
-    const { data: colorPalette } = usePalette(user?.avatar || '', 2, 'hex', {
+    const { data: colorPalette } = usePalette(avatar || '', 2, 'hex', {
         crossOrigin: 'Anonymous',
         quality: 10,
     });
@@ -22,9 +33,9 @@ export const EditProfilePage = () => {
 
     const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file && user) {
+        if (file) {
             const newAvatar = URL.createObjectURL(file);
-            setUser({ ...user, avatar: newAvatar });
+            setAvatar(newAvatar);
         }
     };
 
@@ -33,10 +44,10 @@ export const EditProfilePage = () => {
     };
 
     const handleSave = () => {
-        // Simulate saving user profile changes to an API
         if (user) {
-            // In a real app, this would be an API call to update user data
-            console.log('Saving user data:', user);
+            // Simulate saving user profile changes to an API
+            // In a real app, include avatar in the API payload if supported
+            console.log('Saving user data:', { ...user, avatar });
             alert('Profile changes saved!');
             navigate('/profile');
         }
@@ -52,13 +63,12 @@ export const EditProfilePage = () => {
             // Mock user data based on User model
             const mockUser: User = {
                 id: 1,
-                nickname: '@Nickname',
+                username: 'Nickname',
                 email: 'user@example.com',
-                password: 'securepassword', // This would typically not be fetched
-                avatar: null,
-                games: [],
-                bonuses: [],
-                friends: [],
+                password_hash: 'securepassword',
+                role: 'user',
+                created_at: new Date(),
+                updated_at: undefined,
             };
             setUser(mockUser);
         };
@@ -105,8 +115,8 @@ export const EditProfilePage = () => {
                     }}
                 >
                     <div className={styles.avatarContainer} onClick={handleAvatarClick}>
-                        {user.avatar ? (
-                            <img src={user.avatar} alt="User Avatar" className={styles.avatarImage} />
+                        {avatar ? (
+                            <img src={avatar} alt="User Avatar" className={styles.avatarImage} />
                         ) : (
                             <MdPhotoCamera className={styles.avatarIcon} />
                         )}
@@ -114,18 +124,18 @@ export const EditProfilePage = () => {
                             <MdPhotoCamera className={styles.cameraIcon} />
                         </div>
                     </div>
-                    <span className={styles.nickname} style={{ color: textColor }}>{user.nickname}</span>
+                    <span className={styles.username} style={{ color: textColor }}>{user.username}</span>
                 </div>
 
                 <div className={styles.formContainer}>
                     <div className={styles.formGroup}>
-                        <label className={styles.label}>Nickname</label>
+                        <label className={styles.label}>Username</label>
                         <input
                             type="text"
-                            value={user.nickname}
-                            onChange={(e) => setUser({ ...user, nickname: e.target.value })}
+                            value={user.username}
+                            onChange={(e) => setUser({ ...user, username: e.target.value })}
                             className={styles.input}
-                            placeholder="Enter your nickname"
+                            placeholder="Enter your username"
                         />
                     </div>
                     <div className={styles.formGroup}>

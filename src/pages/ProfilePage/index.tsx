@@ -6,8 +6,6 @@ import {
     MdOutlineNotifications,
     MdOutlineSettings,
     MdSportsEsports,
-    MdEmojiEvents,
-    MdGroup,
     MdStar,
     MdAccountCircle,
     MdPhotoCamera,
@@ -17,36 +15,17 @@ import {
     MdAdd,
 } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
-import { GameCard, BonusCard, FriendCard, FavoriteGameCard } from '../../components';
-import { type User } from '../../models/User';
-import { type Game, type Bonus, type Friend } from '../../models';
 import { getTextColor } from '../../utils/colorUtils';
+import { baseDomain } from '../../const/baseDomain';
+import type { Bill }  from '../../models/Bill.ts';
+import type { License } from '../../models/License.ts';
+import type { User } from  '../../models/User.ts';
 
-import avatarFriend from '../../assets/avatar-cat.png';
-import gameCyberpunk from '../../assets/game-cyberpunk.jpg';
-import gameSilksong from '../../assets/game-silksong.jpg';
-import gamePeak from '../../assets/game-peak.jpg';
-
-const initialGames: Game[] = [
-    { id: 1, title: 'Cyberpunk 2077', image: gameCyberpunk, price: '1399 ₴', genre: 'Open World', isFavorite: false },
-    { id: 2, title: 'Hollow Knight: Silksong', image: gameSilksong, price: '899 ₴', genre: 'Action', isFavorite: false },
-    { id: 3, title: 'PEAK', image: gamePeak, price: '1599 ₴', genre: 'Adventure', isFavorite: false },
-];
-
-const initialBonuses: Bonus[] = [
-    { id: 1, name: '10% Discount', description: 'Valid until Dec 2025' },
-    { id: 2, name: '50 Coins', description: 'Earned from last purchase' },
-    { id: 3, name: 'Free Trial', description: '1 week extension' },
-];
-
-const initialFriends: Friend[] = [
-    { id: 1, name: '@Friend1', avatar: avatarFriend },
-    { id: 2, name: '@Friend2', avatar: avatarFriend },
-    { id: 3, name: '@Friend3', avatar: avatarFriend },
-];
 
 export const ProfilePage = () => {
     const [user, setUser] = useState<User | null>(null);
+    const [bills, setBills] = useState<Bill[]>([]);
+    const [licenses, setLicenses] = useState<License[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isSwitchAccountOpen, setIsSwitchAccountOpen] = useState(false);
@@ -55,44 +34,109 @@ export const ProfilePage = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('My Library');
 
-    // Mock list of other accounts
-    const mockAccounts: User[] = [
-        {
-            id: 2,
-            nickname: '@OtherUser1',
-            email: 'other1@example.com',
-            password: 'otherpassword1',
-            avatar: null,
-            games: [],
-            bonuses: [],
-            friends: [],
-        },
-        {
-            id: 3,
-            nickname: '@OtherUser2',
-            email: 'other2@example.com',
-            password: 'otherpassword2',
-            avatar: null,
-            games: [],
-            bonuses: [],
-            friends: [],
-        },
-    ];
-
     const { data: colorPalette } = usePalette(user?.avatar || '', 2, 'hex', {
         crossOrigin: 'Anonymous',
         quality: 10,
     });
 
-    // Calculate text color based on the dominant color
     const dominantColor = colorPalette?.[0] || '#888';
     const textColor = getTextColor(dominantColor);
 
-    const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const fetchUserData = async (token: string) => {
+        try {
+            const response = await fetch(`${baseDomain}/User`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const userData = await response.json();
+                setUser({
+                    id: userData.id,
+                    username: userData.username,
+                    password_hash: userData.password_hash,
+                    created_at: userData.created_at,
+                    updated_at: userData.updated_at,
+                    email: userData.email,
+                    role: userData.role,
+                    avatar: userData.avatar,
+                });
+                localStorage.setItem('user', JSON.stringify(userData));
+            } else {
+                console.error('Failed to fetch user data');
+                navigate('/');
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            navigate('/');
+        }
+    };
+
+    const fetchUserBills = async (token: string) => {
+        try {
+            const response = await fetch(`${baseDomain}/Bill`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const billsData = await response.json();
+                setBills(billsData);
+            } else {
+                console.error('Failed to fetch bills');
+            }
+        } catch (error) {
+            console.error('Error fetching bills:', error);
+        }
+    };
+
+    const fetchUserLicenses = async (token: string) => {
+        try {
+            const response = await fetch(`${baseDomain}/License`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const licensesData = await response.json();
+                setLicenses(licensesData);
+            } else {
+                console.error('Failed to fetch licenses');
+            }
+        } catch (error) {
+            console.error('Error fetching licenses:', error);
+        }
+    };
+
+    const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file && user) {
-            const newAvatar = URL.createObjectURL(file);
-            setUser({ ...user, avatar: newAvatar });
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+                const response = await fetch(`${baseDomain}/User/${user.id}`, {
+                    method: 'PUT',
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+
+                if (response.ok) {
+                    const newAvatar = URL.createObjectURL(file);
+                    setUser({ ...user, avatar: newAvatar });
+                    localStorage.setItem('user', JSON.stringify({ ...user, avatar: newAvatar }));
+                } else {
+                    alert('Failed to update avatar');
+                }
+            } catch (error) {
+                console.error('Error updating avatar:', error);
+                alert('An error occurred while updating the avatar');
+            }
         }
     };
 
@@ -102,26 +146,44 @@ export const ProfilePage = () => {
 
     const handleSettingsToggle = () => {
         setIsSettingsOpen(!isSettingsOpen);
-        setIsSwitchAccountOpen(false); // Close switch account dropdown if settings is toggled
+        setIsSwitchAccountOpen(false);
     };
 
     const handleSwitchAccountToggle = () => {
         setIsSwitchAccountOpen(!isSwitchAccountOpen);
-        setIsSettingsOpen(false); // Close settings dropdown if switch account is toggled
+        setIsSettingsOpen(false);
     };
 
-    const handleSwitchAccount = (account: User) => {
-        setIsSwitchAccountOpen(false);
-        setUser(account); // Switch to the selected account
-        localStorage.setItem('user', JSON.stringify(account)); // Update localStorage
-        alert(`Switched to account: ${account.nickname}`);
+    const handleSwitchAccount = async (email: string, password: string) => {
+        try {
+            const response = await fetch(`${baseDomain}/Authorization/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('token', data.token);
+                await fetchUserData(data.token);
+                await fetchUserBills(data.token);
+                await fetchUserLicenses(data.token);
+                setIsSwitchAccountOpen(false);
+                alert(`Switched to account: ${email}`);
+            } else {
+                alert('Failed to switch account');
+            }
+        } catch (error) {
+            console.error('Error switching account:', error);
+            alert('An error occurred while switching account');
+        }
     };
 
     const handleAddNewAccount = () => {
         setIsSwitchAccountOpen(false);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/');
+        navigate('/register');
     };
 
     const handleEditProfile = () => {
@@ -133,21 +195,19 @@ export const ProfilePage = () => {
         setIsSettingsOpen(false);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        navigate('/');
+        navigate('/login');
     };
 
-    const handleToggleFavorite = (gameId: number) => {
-        if (user) {
-            setUser({
-                ...user,
-                games: user.games.map((game) =>
-                    game.id === gameId ? { ...game, isFavorite: !game.isFavorite } : game
-                ),
-            });
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            fetchUserData(token);
+            fetchUserBills(token);
+            fetchUserLicenses(token);
+        } else {
+            navigate('/login');
         }
-    };
-
-    const favoriteGames = user?.games.filter((game) => game.isFavorite) || [];
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -163,39 +223,12 @@ export const ProfilePage = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    useEffect(() => {
-        // Simulate fetching user data from an API
-        const fetchUserData = async () => {
-            // Try to load user from localStorage first
-            const storedUser = localStorage.getItem('user');
-            if (storedUser) {
-                setUser(JSON.parse(storedUser));
-            } else {
-                // Fallback to mock user data
-                const mockUser: User = {
-                    id: 1,
-                    nickname: '@Nickname',
-                    email: 'user@example.com',
-                    password: 'securepassword',
-                    avatar: null,
-                    games: initialGames,
-                    bonuses: initialBonuses,
-                    friends: initialFriends,
-                };
-                setUser(mockUser);
-            }
-        };
-
-        fetchUserData();
-    }, []);
-
     if (!user) {
         return <div>Loading...</div>;
     }
 
     return (
         <div className={styles.profilePage}>
-            {/* Blur background */}
             <div
                 className={styles.blurBackground}
                 style={{
@@ -213,7 +246,7 @@ export const ProfilePage = () => {
             />
 
             <header className={styles.header}>
-                <button className={`${styles.headerButton} ${styles.backButton}`}>
+                <button className={`${styles.headerButton} ${styles.backButton}`} onClick={() => navigate('/store')}>
                     <MdArrowBack /> Back to store
                 </button>
                 <div className={styles.headerIcons}>
@@ -241,19 +274,10 @@ export const ProfilePage = () => {
                             <ul className={styles.dropdownMenu}>
                                 <li
                                     className={`${styles.dropdownItem} ${styles.currentAccount}`}
-                                    onClick={() => handleSwitchAccount(user)}
+                                    onClick={() => handleSwitchAccount(user.email, '')}
                                 >
-                                    <MdAccountCircle /> {user.nickname} (Current)
+                                    <MdAccountCircle /> {user.username} (Current)
                                 </li>
-                                {mockAccounts.map((account) => (
-                                    <li
-                                        key={account.id}
-                                        className={styles.dropdownItem}
-                                        onClick={() => handleSwitchAccount(account)}
-                                    >
-                                        <MdAccountCircle /> {account.nickname}
-                                    </li>
-                                ))}
                                 <li className={styles.dropdownItem} onClick={handleAddNewAccount}>
                                     <MdAdd /> Add new account
                                 </li>
@@ -282,7 +306,7 @@ export const ProfilePage = () => {
                             <MdPhotoCamera className={styles.cameraIcon} />
                         </div>
                     </div>
-                    <span className={styles.nickname} style={{ color: textColor }}>{user.nickname}</span>
+                    <span className={styles.nickname} style={{ color: textColor }}>{user.username}</span>
                 </div>
 
                 <nav className={styles.navigation}>
@@ -293,64 +317,38 @@ export const ProfilePage = () => {
                         <MdSportsEsports /> My library
                     </button>
                     <button
-                        className={`${styles.navButton} ${activeTab === 'Bonuses' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('Bonuses')}
+                        className={`${styles.navButton} ${activeTab === 'Licenses' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('Licenses')}
                     >
-                        <MdEmojiEvents /> Bonuses
-                    </button>
-                    <button
-                        className={`${styles.navButton} ${activeTab === 'Friends' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('Friends')}
-                    >
-                        <MdGroup /> Friends
-                    </button>
-                    <button
-                        className={`${styles.navButton} ${activeTab === 'Favorites' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('Favorites')}
-                    >
-                        <MdStar /> Favorites
+                        <MdStar /> Licenses
                     </button>
                 </nav>
 
                 <div className={styles.contentArea}>
                     {activeTab === 'My Library' && (
                         <div className={styles.gameGrid}>
-                            {user.games.map((game) => (
-                                <GameCard key={game.id} game={game} />
-                            ))}
-                            <div className={`${styles.gameCard} ${styles.addGameCard}`}>
+
+                                <div className={styles.emptyState}>
+                                    <MdSportsEsports className={styles.emptyIcon} />
+                                    <p>No bills available</p>
+                                    <p className={styles.emptyHint}>Browse the store to make a purchase</p>
+                                </div>
+
+                            <div className={`${styles.gameCard} ${styles.addGameCard}`} onClick={() => navigate('/store')}>
                                 <span className={styles.plusIcon}>+</span>
-                                <p>Add new game</p>
+                                <p>Add new product</p>
                             </div>
                         </div>
                     )}
-                    {activeTab === 'Bonuses' && (
-                        <div className={styles.bonusList}>
-                            {user.bonuses.map((bonus) => (
-                                <BonusCard key={bonus.id} bonus={bonus} />
-                            ))}
-                        </div>
-                    )}
-                    {activeTab === 'Friends' && (
-                        <div className={styles.friendGrid}>
-                            {user.friends.map((friend) => (
-                                <FriendCard key={friend.id} friend={friend} />
-                            ))}
-                        </div>
-                    )}
-                    {activeTab === 'Favorites' && (
-                        <div className={styles.gameGrid}>
-                            {favoriteGames.length > 0 ? (
-                                favoriteGames.map((game) => (
-                                    <FavoriteGameCard key={game.id} game={game} onToggleFavorite={handleToggleFavorite} />
-                                ))
-                            ) : (
+                    {activeTab === 'Licenses' && (
+                        <div className={styles.licenseList}>
+
                                 <div className={styles.emptyState}>
                                     <MdStar className={styles.emptyIcon} />
-                                    <p>No favorite games yet</p>
-                                    <p className={styles.emptyHint}>Add games to favorites from your library</p>
+                                    <p>No licenses available</p>
+                                    <p className={styles.emptyHint}>Purchase products to receive licenses</p>
                                 </div>
-                            )}
+
                         </div>
                     )}
                 </div>
@@ -358,3 +356,5 @@ export const ProfilePage = () => {
         </div>
     );
 };
+
+export default ProfilePage;

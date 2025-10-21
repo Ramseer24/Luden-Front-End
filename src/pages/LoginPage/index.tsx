@@ -1,10 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { type User } from '../../models/User';
 import styles from './styles.module.css';
 import loginPattern from '../../assets/login-pattern.jpg';
 import ludenLogo from '../../assets/luden-logo.svg';
 import googleIcon from '../../assets/google-icon.png';
+
+// User interface based on the Users table
+interface User {
+    id: number;
+    username: string;
+    email: string;
+    password_hash: string;
+    role: 'user' | 'admin' | 'moderator';
+    created_at: Date;
+    updated_at?: Date;
+}
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -14,13 +24,12 @@ export const LoginPage = () => {
     // Mock user data for authentication simulation
     const mockUser: User = {
         id: 1,
-        nickname: '@Nickname',
+        username: 'Nickname',
         email: 'user@example.com',
-        password: 'securepassword',
-        avatar: null,
-        games: [],
-        bonuses: [],
-        friends: [],
+        password_hash: 'securepasswordhash', // Simulating a hashed password
+        role: 'user',
+        created_at: new Date(),
+        updated_at: undefined,
     };
 
     const handleSignUpClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -36,11 +45,19 @@ export const LoginPage = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (email && password) {
-            // Simulate authentication by checking against mockUser
-            if (email === mockUser.email && password === mockUser.password) {
+            // Simulate authentication by checking email and password_hash
+            // In a real app, password would be hashed and verified on the backend
+            if (email === mockUser.email && password === 'securepassword') {
                 // Store user data in localStorage to simulate successful login
                 localStorage.setItem('token', 'mock-token'); // Mock token for authentication
-                localStorage.setItem('user', JSON.stringify(mockUser)); // Store user data
+                localStorage.setItem('user', JSON.stringify({
+                    id: mockUser.id,
+                    username: mockUser.username,
+                    email: mockUser.email,
+                    role: mockUser.role,
+                    created_at: mockUser.created_at,
+                    updated_at: mockUser.updated_at,
+                }));
                 navigate('/profile');
             } else {
                 alert('Invalid email or password.');
