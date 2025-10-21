@@ -4,6 +4,7 @@ import ludenLogo from '../../assets/luden-logo.svg';
 import googleIcon from '../../assets/google-icon.png';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import UserService from "../../services/UserService.ts";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -20,12 +21,28 @@ export const LoginPage = () => {
         navigate('/resetPass');
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (email && password) {
-            navigate('/profile');
-        } else {
+
+        if (!email || !password) {
             alert('Please fill in both email and password fields.');
+            return;
+        }
+
+        try {
+            // Отправляем запрос на сервер
+            const result = await UserService.login({ email, password });
+
+            // Если сервер вернул токен
+            if (result?.token) {
+                localStorage.setItem('authToken', result.token);
+                alert('✅ Login successful!');
+                navigate('/profile');
+            } else {
+                alert('⚠️ Login response without token.');
+            }
+        } catch (err: any) {
+            alert('❌ Error: ' + err.message);
         }
     };
 

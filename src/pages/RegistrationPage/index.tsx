@@ -4,36 +4,56 @@ import ludenLogo from '../../assets/luden-logo.svg';
 import googleIcon from '../../assets/google-icon.png';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import UserService from '../../services/UserService'; //подключаем наш сервис
 
 export const RegistrationPage = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [message, setMessage] = useState('');
 
     const handleLoginClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
         navigate('/');
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Basic validation example
-        if (email && password && password === confirmPassword) {
-            navigate('/'); // Redirect to home page after successful sign-up
-        } else {
-            alert('Please fill all fields and ensure passwords match.');
+
+        // простая проверка
+        if (!email || !password || !confirmPassword) {
+            alert('Please fill in all fields.');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            alert('Passwords do not match.');
+            return;
+        }
+
+        try {
+            setMessage('⏳ Registering...');
+            const result = await UserService.register({ email, password });
+
+            // если ответ пришёл
+            if (result) {
+                setMessage('✅ Registration successful!');
+                // небольшая задержка для UX
+                setTimeout(() => navigate('/'), 1000);
+            } else {
+                setMessage('⚠️ Something went wrong. Please try again.');
+            }
+        } catch (err: any) {
+            console.error(err);
+            setMessage('❌ Error: ' + err.message);
         }
     };
 
     const clearInput = (inputId: string) => {
-        if (inputId === 'email') {
-            setEmail('');
-        } else if (inputId === 'password') {
-            setPassword('');
-        } else if (inputId === 'confirmPassword') {
-            setConfirmPassword('');
-        }
+        if (inputId === 'email') setEmail('');
+        else if (inputId === 'password') setPassword('');
+        else if (inputId === 'confirmPassword') setConfirmPassword('');
     };
 
     return (
@@ -47,7 +67,10 @@ export const RegistrationPage = () => {
                         <h2>Welcome to</h2>
                         <img src={ludenLogo} alt="Luden Logo" className={styles.logo} />
                     </div>
-                    <p className={styles.subtitle}>Build your collection of legendary games - start now!</p>
+                    <p className={styles.subtitle}>
+                        Build your collection of legendary games - start now!
+                    </p>
+
                     <form className={styles.form} onSubmit={handleSubmit}>
                         <div className={styles.inputGroup}>
                             <label htmlFor="email">Email</label>
@@ -62,9 +85,10 @@ export const RegistrationPage = () => {
                                 className={styles.clearIcon}
                                 onClick={() => clearInput('email')}
                             >
-                &times;
-              </span>
+                                &times;
+                            </span>
                         </div>
+
                         <div className={styles.inputGroup}>
                             <label htmlFor="password">Password</label>
                             <input
@@ -78,9 +102,10 @@ export const RegistrationPage = () => {
                                 className={styles.clearIcon}
                                 onClick={() => clearInput('password')}
                             >
-                &times;
-              </span>
+                                &times;
+                            </span>
                         </div>
+
                         <div className={styles.inputGroup}>
                             <label htmlFor="confirmPassword">Confirm password</label>
                             <input
@@ -94,20 +119,31 @@ export const RegistrationPage = () => {
                                 className={styles.clearIcon}
                                 onClick={() => clearInput('confirmPassword')}
                             >
-                &times;
-              </span>
+                                &times;
+                            </span>
                         </div>
-                        <button type="submit" className={styles.loginButton}>Sign Up</button>
+
+                        <button type="submit" className={styles.loginButton}>
+                            Sign Up
+                        </button>
                     </form>
+
+                    {message && <p style={{ marginTop: 10 }}>{message}</p>}
+
                     <div className={styles.divider}>
                         <span>OR</span>
                     </div>
+
                     <button type="button" className={styles.googleButton}>
                         <img src={googleIcon} alt="Google icon" className={styles.googleIcon} />
                         Continue with Google
                     </button>
+
                     <p className={styles.signupText}>
-                        Already have an account? <a href="#" onClick={handleLoginClick}>Log in</a>
+                        Already have an account?{' '}
+                        <a href="#" onClick={handleLoginClick}>
+                            Log in
+                        </a>
                     </p>
                 </div>
             </div>
