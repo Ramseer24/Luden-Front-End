@@ -1,0 +1,20 @@
+.bonusItem {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bonusName {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.bonusDescription {
+    font-size: 14px;
+    color: #666;
+}

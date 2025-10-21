@@ -6,58 +6,137 @@ import {
     MdOutlineNotifications,
     MdOutlineSettings,
     MdSportsEsports,
-    MdEmojiEvents,
-    MdGroup,
     MdStar,
     MdAccountCircle,
     MdPhotoCamera,
     MdEdit,
     MdLogout,
     MdSwitchAccount,
+    MdAdd,
 } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
-
-import avatarFriend from '../../assets/avatar-cat.png';
-import gameCyberpunk from '../../assets/game-cyberpunk.jpg';
-import gameSilksong from '../../assets/game-silksong.jpg';
-import gamePeak from '../../assets/game-peak.jpg';
-
-const games = [
-    { title: 'Cyberpunk 2077', image: gameCyberpunk },
-    { title: 'Hollow Knight: Silksong', image: gameSilksong },
-    { title: 'PEAK', image: gamePeak },
-];
-
-const bonuses = [
-    { id: 1, name: '10% Discount', description: 'Valid until Dec 2025' },
-    { id: 2, name: '50 Coins', description: 'Earned from last purchase' },
-    { id: 3, name: 'Free Trial', description: '1 week extension' },
-];
-
-const friends = [
-    { id: 1, name: '@Friend1', avatar: avatarFriend },
-    { id: 2, name: '@Friend2', avatar: avatarFriend },
-    { id: 3, name: '@Friend3', avatar: avatarFriend },
-];
+import { getTextColor } from '../../utils/colorUtils';
+import { baseDomain } from '../../const/baseDomain';
+import type { Bill }  from '../../models/Bill.ts';
+import type { License } from '../../models/License.ts';
+import type { User } from  '../../models/User.ts';
 
 
 export const ProfilePage = () => {
-    const [userAvatar, setUserAvatar] = useState<string | null>(null);
+    const [user, setUser] = useState<User | null>(null);
+    const [bills, setBills] = useState<Bill[]>([]);
+    const [licenses, setLicenses] = useState<License[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isSwitchAccountOpen, setIsSwitchAccountOpen] = useState(false);
     const settingsRef = useRef<HTMLDivElement>(null);
+    const switchAccountRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('My Library');
 
-    const { data: colorPalette } = usePalette(userAvatar || '', 2, 'hex', {
+    const { data: colorPalette } = usePalette(user?.avatar || '', 2, 'hex', {
         crossOrigin: 'Anonymous',
         quality: 10,
     });
 
-    const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const dominantColor = colorPalette?.[0] || '#888';
+    const textColor = getTextColor(dominantColor);
+
+    const fetchUserData = async (token: string) => {
+        try {
+            const response = await fetch(`${baseDomain}/User`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const userData = await response.json();
+                setUser({
+                    id: userData.id,
+                    username: userData.username,
+                    password_hash: userData.password_hash,
+                    created_at: userData.created_at,
+                    updated_at: userData.updated_at,
+                    email: userData.email,
+                    role: userData.role,
+                    avatar: userData.avatar,
+                });
+                localStorage.setItem('user', JSON.stringify(userData));
+            } else {
+                console.error('Failed to fetch user data');
+                navigate('/');
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            navigate('/');
+        }
+    };
+
+    const fetchUserBills = async (token: string) => {
+        try {
+            const response = await fetch(`${baseDomain}/Bill`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const billsData = await response.json();
+                setBills(billsData);
+            } else {
+                console.error('Failed to fetch bills');
+            }
+        } catch (error) {
+            console.error('Error fetching bills:', error);
+        }
+    };
+
+    const fetchUserLicenses = async (token: string) => {
+        try {
+            const response = await fetch(`${baseDomain}/License`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const licensesData = await response.json();
+                setLicenses(licensesData);
+            } else {
+                console.error('Failed to fetch licenses');
+            }
+        } catch (error) {
+            console.error('Error fetching licenses:', error);
+        }
+    };
+
+    const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) {
-            setUserAvatar(URL.createObjectURL(file));
+        if (file && user) {
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+                const response = await fetch(`${baseDomain}/User/${user.id}`, {
+                    method: 'PUT',
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+
+                if (response.ok) {
+                    const newAvatar = URL.createObjectURL(file);
+                    setUser({ ...user, avatar: newAvatar });
+                    localStorage.setItem('user', JSON.stringify({ ...user, avatar: newAvatar }));
+                } else {
+                    alert('Failed to update avatar');
+                }
+            } catch (error) {
+                console.error('Error updating avatar:', error);
+                alert('An error occurred while updating the avatar');
+            }
         }
     };
 
@@ -67,28 +146,76 @@ export const ProfilePage = () => {
 
     const handleSettingsToggle = () => {
         setIsSettingsOpen(!isSettingsOpen);
+        setIsSwitchAccountOpen(false);
+    };
+
+    const handleSwitchAccountToggle = () => {
+        setIsSwitchAccountOpen(!isSwitchAccountOpen);
+        setIsSettingsOpen(false);
+    };
+
+    const handleSwitchAccount = async (email: string, password: string) => {
+        try {
+            const response = await fetch(`${baseDomain}/Authorization/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('token', data.token);
+                await fetchUserData(data.token);
+                await fetchUserBills(data.token);
+                await fetchUserLicenses(data.token);
+                setIsSwitchAccountOpen(false);
+                alert(`Switched to account: ${email}`);
+            } else {
+                alert('Failed to switch account');
+            }
+        } catch (error) {
+            console.error('Error switching account:', error);
+            alert('An error occurred while switching account');
+        }
+    };
+
+    const handleAddNewAccount = () => {
+        setIsSwitchAccountOpen(false);
+        navigate('/register');
     };
 
     const handleEditProfile = () => {
         setIsSettingsOpen(false);
-        alert('Edit profile clicked');
-    };
-
-    const handleSwitchAccount = () => {
-        setIsSettingsOpen(false);
-        alert('Switch account clicked');
+        navigate('/editProfile');
     };
 
     const handleLogout = () => {
         setIsSettingsOpen(false);
         localStorage.removeItem('token');
-        navigate('/');
+        localStorage.removeItem('user');
+        navigate('/login');
     };
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            fetchUserData(token);
+            fetchUserBills(token);
+            fetchUserLicenses(token);
+        } else {
+            navigate('/login');
+        }
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
                 setIsSettingsOpen(false);
+            }
+            if (switchAccountRef.current && !switchAccountRef.current.contains(event.target as Node)) {
+                setIsSwitchAccountOpen(false);
             }
         };
 
@@ -96,8 +223,20 @@ export const ProfilePage = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    if (!user) {
+        return <div>Loading...</div>;
+    }
+
     return (
         <div className={styles.profilePage}>
+            <div
+                className={styles.blurBackground}
+                style={{
+                    background: colorPalette
+                        ? `linear-gradient(135deg, ${colorPalette[0]}, ${colorPalette[1]})`
+                        : 'linear-gradient(135deg, #888, #555)',
+                }}
+            />
             <input
                 type="file"
                 ref={fileInputRef}
@@ -107,7 +246,7 @@ export const ProfilePage = () => {
             />
 
             <header className={styles.header}>
-                <button className={`${styles.headerButton} ${styles.backButton}`}>
+                <button className={`${styles.headerButton} ${styles.backButton}`} onClick={() => navigate('/store')}>
                     <MdArrowBack /> Back to store
                 </button>
                 <div className={styles.headerIcons}>
@@ -121,7 +260,7 @@ export const ProfilePage = () => {
                                 <li className={styles.dropdownItem} onClick={handleEditProfile}>
                                     <MdEdit /> Edit profile
                                 </li>
-                                <li className={styles.dropdownItem} onClick={handleSwitchAccount}>
+                                <li className={styles.dropdownItem} onClick={handleSwitchAccountToggle}>
                                     <MdSwitchAccount /> Switch account
                                 </li>
                                 <li className={styles.dropdownItem} onClick={handleLogout}>
@@ -130,6 +269,21 @@ export const ProfilePage = () => {
                             </ul>
                         )}
                     </div>
+                    {isSwitchAccountOpen && (
+                        <div className={styles.switchAccountDropdown} ref={switchAccountRef}>
+                            <ul className={styles.dropdownMenu}>
+                                <li
+                                    className={`${styles.dropdownItem} ${styles.currentAccount}`}
+                                    onClick={() => handleSwitchAccount(user.email, '')}
+                                >
+                                    <MdAccountCircle /> {user.username} (Current)
+                                </li>
+                                <li className={styles.dropdownItem} onClick={handleAddNewAccount}>
+                                    <MdAdd /> Add new account
+                                </li>
+                            </ul>
+                        </div>
+                    )}
                 </div>
             </header>
 
@@ -143,8 +297,8 @@ export const ProfilePage = () => {
                     }}
                 >
                     <div className={styles.avatarContainer} onClick={handleAvatarClick}>
-                        {userAvatar ? (
-                            <img src={userAvatar} alt="User Avatar" className={styles.avatarImage} />
+                        {user.avatar ? (
+                            <img src={user.avatar} alt="User Avatar" className={styles.avatarImage} />
                         ) : (
                             <MdAccountCircle className={styles.avatarIcon} />
                         )}
@@ -152,7 +306,7 @@ export const ProfilePage = () => {
                             <MdPhotoCamera className={styles.cameraIcon} />
                         </div>
                     </div>
-                    <span className={styles.nickname}>@Nickname</span>
+                    <span className={styles.nickname} style={{ color: textColor }}>{user.username}</span>
                 </div>
 
                 <nav className={styles.navigation}>
@@ -163,64 +317,37 @@ export const ProfilePage = () => {
                         <MdSportsEsports /> My library
                     </button>
                     <button
-                        className={`${styles.navButton} ${activeTab === 'Bonuses' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('Bonuses')}
+                        className={`${styles.navButton} ${activeTab === 'Licenses' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('Licenses')}
                     >
-                        <MdEmojiEvents /> Bonuses
-                    </button>
-                    <button
-                        className={`${styles.navButton} ${activeTab === 'Friends' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('Friends')}
-                    >
-                        <MdGroup /> Friends
-                    </button>
-                    <button
-                        className={`${styles.navButton} ${activeTab === 'Favorites' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('Favorites')}
-                    >
-                        <MdStar /> Favorites
+                        <MdStar /> Licenses
                     </button>
                 </nav>
 
                 <div className={styles.contentArea}>
                     {activeTab === 'My Library' && (
                         <div className={styles.gameGrid}>
-                            {games.map((game, index) => (
-                                <div key={index} className={styles.gameCard}>
-                                    <img src={game.image} alt={game.title} style={{ width: '100%', height: '260px', objectFit: 'cover' }} />
-                                    <div className={styles.gameInfo} style={{ background: 'none', padding: '10px', color: '#000' }}>
-                                        <p style={{ margin: '0' }}>{game.title}</p>
-                                    </div>
+
+                                <div className={styles.emptyState}>
+                                    <MdSportsEsports className={styles.emptyIcon} />
+                                    <p>No bills available</p>
+                                    <p className={styles.emptyHint}>Browse the store to make a purchase</p>
                                 </div>
-                            ))}
-                            <div className={`${styles.gameCard} ${styles.addGameCard}`}>
+
+                            <div className={`${styles.gameCard} ${styles.addGameCard}`} onClick={() => navigate('/store')}>
                                 <span className={styles.plusIcon}>+</span>
-                                <p>Add new game</p>
+                                <p>Add new product</p>
                             </div>
                         </div>
                     )}
-                    {activeTab === 'Bonuses' && (
-                        <div className={styles.bonusList}>
-                            {bonuses.map((bonus) => (
-                                <div key={bonus.id} className={styles.bonusItem}>
-                                    <span className={styles.bonusName}>{bonus.name}</span>
-                                    <span className={styles.bonusDescription}>{bonus.description}</span>
+                    {activeTab === 'Licenses' && (
+                        <div className={styles.licenseList}>
+
+                                <div className={styles.emptyState}>
+                                    <MdStar className={styles.emptyIcon} />
+                                    <p>No licenses available</p>
+                                    <p className={styles.emptyHint}>Purchase products to receive licenses</p>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                    {activeTab === 'Friends' && (
-                        <div className={styles.friendGrid}>
-                            {friends.map((friend) => (
-                                <div key={friend.id} className={styles.friendCard}>
-                                    <img src={friend.avatar} alt={friend.name} className={styles.friendAvatar} />
-                                    <p>{friend.name}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    {activeTab === 'Favorites' && (
-                        <div className={styles.gameGrid}>
 
                         </div>
                     )}
@@ -229,3 +356,5 @@ export const ProfilePage = () => {
         </div>
     );
 };
+
+export default ProfilePage;
