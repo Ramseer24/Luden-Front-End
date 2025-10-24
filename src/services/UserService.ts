@@ -44,9 +44,38 @@ class UserService extends BaseService {
             role: string;
             createdAt: string;
             updatedAt?: string;
+            avatarUrl?: string;
             bills: any[];
             products: any[];
         }>('/user/profile', { method: 'GET' });
+    }
+
+    /**
+     * Обновление информации пользователя (включая аватар)
+     */
+    async updateUser(data: { username?: string; email?: string; avatar?: File }) {
+        const formData = new FormData();
+
+        if (data.username) {
+            formData.append('username', data.username);
+        }
+        if (data.email) {
+            formData.append('email', data.email);
+        }
+        if (data.avatar) {
+            formData.append('avatar', data.avatar);
+        }
+
+        return this.request<{
+            message: string;
+            username: string;
+            email: string;
+            avatarUrl?: string;
+        }>('/user/update', {
+            method: 'PUT',
+            body: formData,
+            headers: {} // Убираем Content-Type для FormData
+        });
     }
 }
 

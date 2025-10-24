@@ -57,7 +57,7 @@ export const ProfilePage = () => {
                     updated_at: profileData.updatedAt ? new Date(profileData.updatedAt) : undefined,
                     email: profileData.email,
                     role: profileData.role as 'user' | 'admin' | 'moderator',
-                    avatar: '', // Пока аватар не поддерживается, используем пустую строку
+                    avatar: profileData.avatarUrl || '', // Используем URL аватара из профиля
                 });
 
                 // Устанавливаем bills и products из профиля
@@ -98,9 +98,17 @@ export const ProfilePage = () => {
     const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file && user) {
-            // TODO: Реализовать через UserService когда будет endpoint для загрузки аватара
-            console.log('Avatar upload not implemented yet');
-            alert('Avatar upload feature coming soon');
+            try {
+                const result = await UserService.updateUser({ avatar: file });
+                if (result && result.avatarUrl) {
+                    // Обновляем аватар пользователя
+                    setUser({ ...user, avatar: result.avatarUrl });
+                    alert('Avatar uploaded successfully!');
+                }
+            } catch (error) {
+                console.error('Error uploading avatar:', error);
+                alert('Failed to upload avatar');
+            }
         }
     };
 

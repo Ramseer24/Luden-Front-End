@@ -10,6 +10,11 @@ export default defineConfig({
                 target: 'https://localhost:7010', //бэкэнд здесь
                 changeOrigin: true,
                 secure: false
+            },
+            '/uploads': {
+                target: 'https://localhost:7010', // Прокси для статических файлов (аватары)
+                changeOrigin: true,
+                secure: false
             }
         }
     },

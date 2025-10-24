@@ -17,9 +17,13 @@ class BaseService {
         const skipAuth = BaseService.noAuth.some(p => endpointLower.includes(p.toLowerCase()));
 
         const headers: HeadersInit = {
-            'Content-Type': 'application/json',
             ...(options.headers || {})
         };
+
+        // Добавляем Content-Type только если не FormData
+        if (!(options.body instanceof FormData)) {
+            (headers as any)['Content-Type'] = 'application/json';
+        }
 
         if (!skipAuth) {
             const token = this.getToken();

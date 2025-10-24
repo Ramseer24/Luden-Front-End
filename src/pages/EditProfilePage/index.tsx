@@ -3,22 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import { usePalette } from 'color-thief-react';
 import { MdArrowBack, MdPhotoCamera, MdSave } from 'react-icons/md';
 import { getTextColor } from '../../utils/colorUtils';
+import UserService from '../../services/UserService';
 import styles from './styles.module.css';
 
-// User interface based on the Users table
+// User interface based on backend response
 interface User {
-    id: number;
     username: string;
     email: string;
-    password_hash: string;
-    role: 'user' | 'admin' | 'moderator';
-    created_at: Date;
-    updated_at?: Date;
+    role: string;
+    createdAt: string;
+    updatedAt?: string;
+    avatarUrl?: string;
 }
 
 export const EditProfilePage = () => {
     const [user, setUser] = useState<User | null>(null);
-    const [avatar, setAvatar] = useState<string | null>(null); // Separate state for avatar
+    const [avatar, setAvatar] = useState<string | null>(null);
+    const [avatarFile, setAvatarFile] = useState<File | null>(null); // Store file for upload
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
 
@@ -36,6 +39,7 @@ export const EditProfilePage = () => {
         if (file) {
             const newAvatar = URL.createObjectURL(file);
             setAvatar(newAvatar);
+            setAvatarFile(file); // Save file for upload
         }
     };
 
@@ -43,13 +47,26 @@ export const EditProfilePage = () => {
         fileInputRef.current?.click();
     };
 
-    const handleSave = () => {
-        if (user) {
-            // Simulate saving user profile changes to an API
-            // In a real app, include avatar in the API payload if supported
-            console.log('Saving user data:', { ...user, avatar });
-            alert('Profile changes saved!');
+    const handleSave = async () => {
+        if (!user) return;
+
+        setSaving(true);
+        try {
+            const updateData: { username?: string; email?: string; avatar?: File } = {};
+
+            // Only send changed fields
+            if (user.username) updateData.username = user.username;
+            if (user.email) updateData.email = user.email;
+            if (avatarFile) updateData.avatar = avatarFile;
+
+            const result = await UserService.updateUser(updateData);
+
+            alert('✅ ' + result.message);
             navigate('/profile');
+        } catch (error: any) {
+            alert('❌ Error: ' + (error.message || 'Failed to update profile'));
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -58,25 +75,34 @@ export const EditProfilePage = () => {
     };
 
     useEffect(() => {
-        // Simulate fetching user data from an API
         const fetchUserData = async () => {
-            // Mock user data based on User model
-            const mockUser: User = {
-                id: 1,
-                username: 'Nickname',
-                email: 'user@example.com',
-                password_hash: 'securepassword',
-                role: 'user',
-                created_at: new Date(),
-                updated_at: undefined,
-            };
-            setUser(mockUser);
+            try {
+                const profileData = await UserService.getProfile();
+                setUser({
+                    username: profileData.username,
+                    email: profileData.email,
+                    role: profileData.role,
+                    createdAt: profileData.createdAt,
+                    updatedAt: profileData.updatedAt,
+                    avatarUrl: profileData.avatarUrl,
+                });
+
+                // Set avatar from backend if exists
+                if (profileData.avatarUrl) {
+                    setAvatar(profileData.avatarUrl);
+                }
+            } catch (error: any) {
+                alert('❌ Error loading profile: ' + (error.message || 'Unknown error'));
+                navigate('/login');
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchUserData();
-    }, []);
+    }, [navigate]);
 
-    if (!user) {
+    if (loading || !user) {
         return <div>Loading...</div>;
     }
 
@@ -157,8 +183,8 @@ export const EditProfilePage = () => {
                             Reset Password
                         </button>
                     </div>
-                    <button className={styles.saveButton} onClick={handleSave}>
-                        <MdSave /> Save Changes
+                    <button className={styles.saveButton} onClick={handleSave} disabled={saving}>
+                        <MdSave /> {saving ? 'Saving...' : 'Save Changes'}
                     </button>
                 </div>
             </main>
