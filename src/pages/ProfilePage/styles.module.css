@@ -263,3 +263,131 @@
     font-size: 14px;
     color: #999;
 }
+
+/* Bill Card Styles */
+.billCard {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.billCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.billHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.billId {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.billStatus {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.statusPending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.statusPaid {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.statusCancelled {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.statusRefunded {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.statusProcessing {
+    background-color: #cfe2ff;
+    color: #084298;
+}
+
+.statusCompleted {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.billDetails {
+    margin-bottom: 15px;
+}
+
+.billTotal {
+    font-size: 18px;
+    font-weight: bold;
+    color: #B93838;
+    margin: 5px 0;
+}
+
+.billDate {
+    font-size: 14px;
+    color: #666;
+    margin: 5px 0;
+}
+
+.billItems {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.billItemsTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.billItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.productName {
+    flex: 1;
+    font-weight: 500;
+    color: #333;
+}
+
+.productQuantity {
+    margin: 0 10px;
+    color: #666;
+}
+
+.productPrice {
+    font-weight: 600;
+    color: #B93838;
+}
+
+.licenseList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}

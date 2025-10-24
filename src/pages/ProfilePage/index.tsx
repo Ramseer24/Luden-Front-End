@@ -289,12 +289,44 @@ export const ProfilePage = () => {
                 <div className={styles.contentArea}>
                     {activeTab === 'My Library' && (
                         <div className={styles.gameGrid}>
-
+                            {bills.length === 0 ? (
                                 <div className={styles.emptyState}>
                                     <MdSportsEsports className={styles.emptyIcon} />
                                     <p>No bills available</p>
                                     <p className={styles.emptyHint}>Browse the store to make a purchase</p>
                                 </div>
+                            ) : (
+                                bills.map((bill) => (
+                                    <div key={bill.id} className={styles.billCard}>
+                                        <div className={styles.billHeader}>
+                                            <span className={styles.billId}>Bill #{bill.id}</span>
+                                            <span className={`${styles.billStatus} ${styles[`status${bill.status}`]}`}>
+                                                {bill.status}
+                                            </span>
+                                        </div>
+                                        <div className={styles.billDetails}>
+                                            <p className={styles.billTotal}>Total: ${bill.totalAmount.toFixed(2)}</p>
+                                            <p className={styles.billDate}>
+                                                {new Date(bill.createdAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                        {bill.billItems && bill.billItems.length > 0 && (
+                                            <div className={styles.billItems}>
+                                                <p className={styles.billItemsTitle}>Products:</p>
+                                                {bill.billItems.map((item) => (
+                                                    <div key={item.id} className={styles.billItem}>
+                                                        <span className={styles.productName}>
+                                                            {item.product?.name || `Product #${item.productId}`}
+                                                        </span>
+                                                        <span className={styles.productQuantity}>x{item.quantity}</span>
+                                                        <span className={styles.productPrice}>${item.price.toFixed(2)}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
 
                             <div className={`${styles.gameCard} ${styles.addGameCard}`} onClick={() => navigate('/store')}>
                                 <span className={styles.plusIcon}>+</span>

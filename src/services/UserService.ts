@@ -45,8 +45,39 @@ class UserService extends BaseService {
             createdAt: string;
             updatedAt?: string;
             avatarUrl?: string;
-            bills: any[];
-            products: any[];
+            bills: Array<{
+                id: number;
+                userId: number;
+                totalAmount: number;
+                status: 'Pending' | 'Paid' | 'Cancelled' | 'Refunded' | 'Processing' | 'Completed';
+                createdAt: string;
+                updatedAt?: string;
+                billItems: Array<{
+                    id: number;
+                    billId: number;
+                    productId: number;
+                    quantity: number;
+                    price: number;
+                    product?: {
+                        id: number;
+                        name: string;
+                        description: string;
+                        price: number;
+                        stock: number;
+                        createdAt: string;
+                        updatedAt?: string;
+                    };
+                }>;
+            }>;
+            products: Array<{
+                id: number;
+                name: string;
+                description: string;
+                price: number;
+                stock: number;
+                createdAt: string;
+                updatedAt?: string;
+            }>;
         }>('/user/profile', { method: 'GET' });
     }
 
