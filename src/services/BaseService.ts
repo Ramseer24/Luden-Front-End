@@ -3,12 +3,9 @@ const API_BASE_URL = '/api'; // запросы пойдут через прок�
 
 class BaseService {
     static noAuth = [
-        '/user/login',
-        '/user/register',
-        'login',
-        'register',
-        '/user/google',
-        'google',
+        '/authorization/login',
+        '/authorization/register',
+        '/authorization/google',
     ];
 
     private getToken() {

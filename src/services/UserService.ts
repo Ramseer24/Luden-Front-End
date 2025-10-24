@@ -35,10 +35,18 @@ class UserService extends BaseService {
     }
 
     /**
-     * Получение профиля (в будущем)
+     * Получение профиля текущего пользователя по токену
      */
     async getProfile() {
-        return this.request('/user/profile', { method: 'GET' });
+        return this.request<{
+            username: string;
+            email: string;
+            role: string;
+            createdAt: string;
+            updatedAt?: string;
+            bills: any[];
+            products: any[];
+        }>('/user/profile', { method: 'GET' });
     }
 }
 

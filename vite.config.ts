@@ -7,7 +7,7 @@ export default defineConfig({
         port: 5173,                 //фронт будет на http://localhost:5173
         proxy: {
             '/api': {
-                target: 'http://localhost:5195', //бэкэнд здесь
+                target: 'https://localhost:7010', //бэкэнд здесь
                 changeOrigin: true,
                 secure: false
             }

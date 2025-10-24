@@ -16,10 +16,12 @@ import {
 } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { getTextColor } from '../../utils/colorUtils';
-import { baseDomain } from '../../const/baseDomain';
 import type { Bill }  from '../../models/Bill.ts';
 import type { License } from '../../models/License.ts';
 import type { User } from  '../../models/User.ts';
+import UserService from '../../services/UserService';
+import BillService from '../../services/BillService';
+import LicenseService from '../../services/LicenseService';
 
 
 export const ProfilePage = () => {
@@ -42,27 +44,25 @@ export const ProfilePage = () => {
     const dominantColor = colorPalette?.[0] || '#888';
     const textColor = getTextColor(dominantColor);
 
-    const fetchUserData = async (token: string) => {
+    const fetchUserData = async () => {
         try {
-            const response = await fetch(`${baseDomain}/User`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
+            const profileData = await UserService.getProfile();
 
-            if (response.ok) {
-                const userData = await response.json();
+            if (profileData) {
                 setUser({
-                    id: userData.id,
-                    username: userData.username,
-                    password_hash: userData.password_hash,
-                    created_at: userData.created_at,
-                    updated_at: userData.updated_at,
-                    email: userData.email,
-                    role: userData.role,
-                    avatar: userData.avatar,
+                    id: 0, // ID не приходит в профиле, но можно оставить 0
+                    username: profileData.username,
+                    password_hash: '',
+                    created_at: new Date(profileData.createdAt),
+                    updated_at: profileData.updatedAt ? new Date(profileData.updatedAt) : undefined,
+                    email: profileData.email,
+                    role: profileData.role as 'user' | 'admin' | 'moderator',
+                    avatar: '', // Пока аватар не поддерживается, используем пустую строку
                 });
-                localStorage.setItem('user', JSON.stringify(userData));
+
+                // Устанавливаем bills и products из профиля
+                setBills(profileData.bills || []);
+                // setLicenses можно извлечь из products, если нужно
             } else {
                 console.error('Failed to fetch user data');
                 navigate('/');
@@ -73,38 +73,22 @@ export const ProfilePage = () => {
         }
     };
 
-    const fetchUserBills = async (token: string) => {
+    const fetchUserBills = async () => {
         try {
-            const response = await fetch(`${baseDomain}/Bill`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-
-            if (response.ok) {
-                const billsData = await response.json();
+            const billsData = await BillService.getUserBills();
+            if (billsData) {
                 setBills(billsData);
-            } else {
-                console.error('Failed to fetch bills');
             }
         } catch (error) {
             console.error('Error fetching bills:', error);
         }
     };
 
-    const fetchUserLicenses = async (token: string) => {
+    const fetchUserLicenses = async () => {
         try {
-            const response = await fetch(`${baseDomain}/License`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-
-            if (response.ok) {
-                const licensesData = await response.json();
+            const licensesData = await LicenseService.getUserLicenses();
+            if (licensesData) {
                 setLicenses(licensesData);
-            } else {
-                console.error('Failed to fetch licenses');
             }
         } catch (error) {
             console.error('Error fetching licenses:', error);
@@ -114,29 +98,9 @@ export const ProfilePage = () => {
     const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file && user) {
-            const formData = new FormData();
-            formData.append('avatar', file);
-
-            try {
-                const response = await fetch(`${baseDomain}/User/${user.id}`, {
-                    method: 'PUT',
-                    body: formData,
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    },
-                });
-
-                if (response.ok) {
-                    const newAvatar = URL.createObjectURL(file);
-                    setUser({ ...user, avatar: newAvatar });
-                    localStorage.setItem('user', JSON.stringify({ ...user, avatar: newAvatar }));
-                } else {
-                    alert('Failed to update avatar');
-                }
-            } catch (error) {
-                console.error('Error updating avatar:', error);
-                alert('An error occurred while updating the avatar');
-            }
+            // TODO: Реализовать через UserService когда будет endpoint для загрузки аватара
+            console.log('Avatar upload not implemented yet');
+            alert('Avatar upload feature coming soon');
         }
     };
 
@@ -156,20 +120,10 @@ export const ProfilePage = () => {
 
     const handleSwitchAccount = async (email: string, password: string) => {
         try {
-            const response = await fetch(`${baseDomain}/Authorization/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                localStorage.setItem('token', data.token);
-                await fetchUserData(data.token);
-                await fetchUserBills(data.token);
-                await fetchUserLicenses(data.token);
+            const result = await UserService.login({ email, password });
+            if (result?.token) {
+                localStorage.setItem('authToken', result.token);
+                await fetchUserData();
                 setIsSwitchAccountOpen(false);
                 alert(`Switched to account: ${email}`);
             } else {
@@ -193,19 +147,19 @@ export const ProfilePage = () => {
 
     const handleLogout = () => {
         setIsSettingsOpen(false);
-        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
         localStorage.removeItem('user');
-        navigate('/login');
+        navigate('/');
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
         if (token) {
-            fetchUserData(token);
-            fetchUserBills(token);
-            fetchUserLicenses(token);
+            fetchUserData();
+            fetchUserBills();
+            fetchUserLicenses();
         } else {
-            navigate('/login');
+            navigate('/');
         }
     }, []);
 

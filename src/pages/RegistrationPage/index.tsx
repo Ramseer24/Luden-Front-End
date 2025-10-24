@@ -34,15 +34,31 @@ export const RegistrationPage = () => {
 
         try {
             setMessage('⏳ Registering...');
-            const result = await UserService.register({ email, password });
 
-            // если ответ пришёл
-            if (result) {
-                setMessage('✅ Registration successful!');
-                // небольшая задержка для UX
-                setTimeout(() => navigate('/'), 1000);
+            // Пытаемся зарегистрироваться
+            try {
+                await UserService.register({ email, password });
+                setMessage('✅ Registration successful! Logging in...');
+            } catch (regError: any) {
+                // Если ошибка "EmailBusy" - это значит пользователь уже существует
+                if (regError.message?.includes('EmailBusy') || regError.message?.includes('400')) {
+                    setMessage('📧 Email already registered. Logging in...');
+                } else {
+                    // Другая ошибка - пробрасываем дальше
+                    throw regError;
+                }
+            }
+
+            // В любом случае (успешная регистрация или EmailBusy) пытаемся залогиниться
+            const loginResult = await UserService.login({ email, password });
+
+            if (loginResult?.token) {
+                localStorage.setItem('authToken', loginResult.token);
+                setMessage('✅ Login successful! Redirecting...');
+                setTimeout(() => navigate('/profile'), 500);
             } else {
-                setMessage('⚠️ Something went wrong. Please try again.');
+                setMessage('❌ Login failed. Please try logging in manually.');
+                setTimeout(() => navigate('/'), 2000);
             }
         } catch (err: any) {
             console.error(err);
