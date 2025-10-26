@@ -391,3 +391,68 @@
     flex-direction: column;
     gap: 15px;
 }
+
+.licenseCard {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.licenseKey {
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.licenseStatus {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    background-color: #4caf50;
+    color: white;
+}
+
+.bonusItem {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.bonusName {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.bonusDescription {
+    font-size: 14px;
+    color: #666;
+    display: block;
+}
+
+.gameInfo {
+    padding: 15px;
+}
+
+.gameInfo h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.gameInfo p {
+    margin: 0;
+    font-size: 14px;
+    color: #B93838;
+    font-weight: 600;
+}

@@ -61,7 +61,9 @@ export const EditProfilePage = () => {
 
             const result = await UserService.updateUser(updateData);
 
-            alert('✅ ' + result.message);
+            if (result) {
+                alert('✅ ' + result.message);
+            }
             navigate('/profile');
         } catch (error: any) {
             alert('❌ Error: ' + (error.message || 'Failed to update profile'));
@@ -78,18 +80,20 @@ export const EditProfilePage = () => {
         const fetchUserData = async () => {
             try {
                 const profileData = await UserService.getProfile();
-                setUser({
-                    username: profileData.username,
-                    email: profileData.email,
-                    role: profileData.role,
-                    createdAt: profileData.createdAt,
-                    updatedAt: profileData.updatedAt,
-                    avatarUrl: profileData.avatarUrl,
-                });
+                if (profileData) {
+                    setUser({
+                        username: profileData.username,
+                        email: profileData.email,
+                        role: profileData.role,
+                        createdAt: profileData.createdAt,
+                        updatedAt: profileData.updatedAt,
+                        avatarUrl: profileData.avatarUrl,
+                    });
 
-                // Set avatar from backend if exists
-                if (profileData.avatarUrl) {
-                    setAvatar(profileData.avatarUrl);
+                    // Set avatar from backend if exists
+                    if (profileData.avatarUrl) {
+                        setAvatar(profileData.avatarUrl);
+                    }
                 }
             } catch (error: any) {
                 alert('❌ Error loading profile: ' + (error.message || 'Unknown error'));

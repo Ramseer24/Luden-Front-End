@@ -13,28 +13,35 @@ import {
     MdLogout,
     MdSwitchAccount,
     MdAdd,
+    MdCardGiftcard,
+    MdEmojiEvents,
 } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { getTextColor } from '../../utils/colorUtils';
 import type { Bill }  from '../../models/Bill.ts';
 import type { License } from '../../models/License.ts';
 import type { User } from  '../../models/User.ts';
+import type { Bonus } from '../../models/Bonus.ts';
+import type { Game } from '../../models/Game.ts';
 import UserService from '../../services/UserService';
 import BillService from '../../services/BillService';
 import LicenseService from '../../services/LicenseService';
+import { BillCard } from '../../components/BillCard';
 
 
 export const ProfilePage = () => {
     const [user, setUser] = useState<User | null>(null);
     const [bills, setBills] = useState<Bill[]>([]);
     const [licenses, setLicenses] = useState<License[]>([]);
+    const [bonuses] = useState<Bonus[]>([]);
+    const [favorites] = useState<Game[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isSwitchAccountOpen, setIsSwitchAccountOpen] = useState(false);
     const settingsRef = useRef<HTMLDivElement>(null);
     const switchAccountRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('My Library');
+    const [activeTab, setActiveTab] = useState('My library');
 
     const { data: colorPalette } = usePalette(user?.avatar || '', 2, 'hex', {
         crossOrigin: 'Anonymous',
@@ -50,19 +57,17 @@ export const ProfilePage = () => {
 
             if (profileData) {
                 setUser({
-                    id: 0, // ID не приходит в профиле, но можно оставить 0
+                    id: 0, 
                     username: profileData.username,
                     password_hash: '',
                     created_at: new Date(profileData.createdAt),
                     updated_at: profileData.updatedAt ? new Date(profileData.updatedAt) : undefined,
                     email: profileData.email,
                     role: profileData.role as 'user' | 'admin' | 'moderator',
-                    avatar: profileData.avatarUrl || '', // Используем URL аватара из профиля
+                    avatar: profileData.avatarUrl || '', 
                 });
 
-                // Устанавливаем bills и products из профиля
                 setBills(profileData.bills || []);
-                // setLicenses можно извлечь из products, если нужно
             } else {
                 console.error('Failed to fetch user data');
                 navigate('/');
@@ -101,7 +106,6 @@ export const ProfilePage = () => {
             try {
                 const result = await UserService.updateUser({ avatar: file });
                 if (result && result.avatarUrl) {
-                    // Обновляем аватар пользователя
                     setUser({ ...user, avatar: result.avatarUrl });
                     alert('Avatar uploaded successfully!');
                 }
@@ -273,76 +277,102 @@ export const ProfilePage = () => {
 
                 <nav className={styles.navigation}>
                     <button
-                        className={`${styles.navButton} ${activeTab === 'My Library' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('My Library')}
+                        className={`${styles.navButton} ${activeTab === 'My library' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('My library')}
                     >
                         <MdSportsEsports /> My library
                     </button>
                     <button
-                        className={`${styles.navButton} ${activeTab === 'Licenses' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('Licenses')}
+                        className={`${styles.navButton} ${activeTab === 'Bonuses' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('Bonuses')}
                     >
-                        <MdStar /> Licenses
+                        <MdEmojiEvents /> Bonuses
+                    </button>
+                    <button
+                        className={`${styles.navButton} ${activeTab === 'Bills' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('Bills')}
+                    >
+                        <MdCardGiftcard /> Bills
+                    </button>
+                    <button
+                        className={`${styles.navButton} ${activeTab === 'Favorites' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('Favorites')}
+                    >
+                        <MdStar /> Favorites
                     </button>
                 </nav>
 
                 <div className={styles.contentArea}>
-                    {activeTab === 'My Library' && (
+                    {activeTab === 'My library' && (
+                        <div className={styles.licenseList}>
+                            {licenses.length === 0 ? (
+                                <div className={styles.emptyState}>
+                                    <MdSportsEsports className={styles.emptyIcon} />
+                                    <p>No licenses available</p>
+                                    <p className={styles.emptyHint}>Purchase products to receive licenses</p>
+                                </div>
+                            ) : (
+                                licenses.map((license) => (
+                                    <div key={license.id} className={styles.licenseCard}>
+                                        <div className={styles.licenseKey}>{license.license_key}</div>
+                                        <div className={styles.licenseStatus}>{license.status}</div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+                    {activeTab === 'Bonuses' && (
+                        <div className={styles.bonusList}>
+                            {bonuses.length === 0 ? (
+                                <div className={styles.emptyState}>
+                                    <MdEmojiEvents className={styles.emptyIcon} />
+                                    <p>No bonuses available</p>
+                                    <p className={styles.emptyHint}>Complete achievements to earn bonuses</p>
+                                </div>
+                            ) : (
+                                bonuses.map((bonus) => (
+                                    <div key={bonus.id} className={styles.bonusItem}>
+                                        <span className={styles.bonusName}>{bonus.name}</span>
+                                        <span className={styles.bonusDescription}>{bonus.description}</span>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+                    {activeTab === 'Bills' && (
                         <div className={styles.gameGrid}>
                             {bills.length === 0 ? (
                                 <div className={styles.emptyState}>
-                                    <MdSportsEsports className={styles.emptyIcon} />
+                                    <MdCardGiftcard className={styles.emptyIcon} />
                                     <p>No bills available</p>
                                     <p className={styles.emptyHint}>Browse the store to make a purchase</p>
                                 </div>
                             ) : (
                                 bills.map((bill) => (
-                                    <div key={bill.id} className={styles.billCard}>
-                                        <div className={styles.billHeader}>
-                                            <span className={styles.billId}>Bill #{bill.id}</span>
-                                            <span className={`${styles.billStatus} ${styles[`status${bill.status}`]}`}>
-                                                {bill.status}
-                                            </span>
+                                    <BillCard key={bill.id} bill={bill} />
+                                ))
+                            )}
+                        </div>
+                    )}
+                    {activeTab === 'Favorites' && (
+                        <div className={styles.gameGrid}>
+                            {favorites.length === 0 ? (
+                                <div className={styles.emptyState}>
+                                    <MdStar className={styles.emptyIcon} />
+                                    <p>No favorites yet</p>
+                                    <p className={styles.emptyHint}>Add games to your favorites list</p>
+                                </div>
+                            ) : (
+                                favorites.map((game) => (
+                                    <div key={game.id} className={styles.gameCard}>
+                                        <img src={game.image} alt={game.title} />
+                                        <div className={styles.gameInfo}>
+                                            <h3>{game.title}</h3>
+                                            <p>{game.price}</p>
                                         </div>
-                                        <div className={styles.billDetails}>
-                                            <p className={styles.billTotal}>Total: ${bill.totalAmount.toFixed(2)}</p>
-                                            <p className={styles.billDate}>
-                                                {new Date(bill.createdAt).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                        {bill.billItems && bill.billItems.length > 0 && (
-                                            <div className={styles.billItems}>
-                                                <p className={styles.billItemsTitle}>Products:</p>
-                                                {bill.billItems.map((item) => (
-                                                    <div key={item.id} className={styles.billItem}>
-                                                        <span className={styles.productName}>
-                                                            {item.product?.name || `Product #${item.productId}`}
-                                                        </span>
-                                                        <span className={styles.productQuantity}>x{item.quantity}</span>
-                                                        <span className={styles.productPrice}>${item.price.toFixed(2)}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
                                     </div>
                                 ))
                             )}
-
-                            <div className={`${styles.gameCard} ${styles.addGameCard}`} onClick={() => navigate('/store')}>
-                                <span className={styles.plusIcon}>+</span>
-                                <p>Add new product</p>
-                            </div>
-                        </div>
-                    )}
-                    {activeTab === 'Licenses' && (
-                        <div className={styles.licenseList}>
-
-                                <div className={styles.emptyState}>
-                                    <MdStar className={styles.emptyIcon} />
-                                    <p>No licenses available</p>
-                                    <p className={styles.emptyHint}>Purchase products to receive licenses</p>
-                                </div>
-
                         </div>
                     )}
                 </div>

@@ -6,7 +6,7 @@ class BillService extends BaseService {
      * Получение всех счетов текущего пользователя
      */
     async getUserBills() {
-        return this.request<Bill[]>('/bill', { method: 'GET' });
+        return this.request<Bill[]>('/bill/user', { method: 'GET' });
     }
 
     /**
