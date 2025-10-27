@@ -18,21 +18,19 @@ import {
 } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { getTextColor } from '../../utils/colorUtils';
-import type { Bill }  from '../../models/Bill.ts';
-import type { License } from '../../models/License.ts';
+import type { Bill, Product }  from '../../models/Bill.ts';
 import type { User } from  '../../models/User.ts';
 import type { Bonus } from '../../models/Bonus.ts';
 import type { Game } from '../../models/Game.ts';
 import UserService from '../../services/UserService';
 import BillService from '../../services/BillService';
-import LicenseService from '../../services/LicenseService';
 import { BillCard } from '../../components/BillCard';
-
+import { ProductCard } from '../../components/ProductCard';
 
 export const ProfilePage = () => {
     const [user, setUser] = useState<User | null>(null);
     const [bills, setBills] = useState<Bill[]>([]);
-    const [licenses, setLicenses] = useState<License[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [bonuses] = useState<Bonus[]>([]);
     const [favorites] = useState<Game[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -42,14 +40,23 @@ export const ProfilePage = () => {
     const switchAccountRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('My library');
+    
+    const [palette, setPalette] = useState<string[] | null>(null);
 
-    const { data: colorPalette } = usePalette(user?.avatar || '', 2, 'hex', {
+    const { data: colorPaletteData } = usePalette(user?.avatar || '', 2, 'hex', {
         crossOrigin: 'Anonymous',
         quality: 10,
     });
+    
+    useEffect(() => {
+        if (colorPaletteData) {
+            setPalette(colorPaletteData);
+        }
+    }, [colorPaletteData]);
 
-    const dominantColor = colorPalette?.[0] || '#888';
+    const dominantColor = palette?.[0] || '#888';
     const textColor = getTextColor(dominantColor);
+
 
     const fetchUserData = async () => {
         try {
@@ -68,6 +75,7 @@ export const ProfilePage = () => {
                 });
 
                 setBills(profileData.bills || []);
+                setProducts(profileData.products || []);
             } else {
                 console.error('Failed to fetch user data');
                 navigate('/');
@@ -89,16 +97,6 @@ export const ProfilePage = () => {
         }
     };
 
-    const fetchUserLicenses = async () => {
-        try {
-            const licensesData = await LicenseService.getUserLicenses();
-            if (licensesData) {
-                setLicenses(licensesData);
-            }
-        } catch (error) {
-            console.error('Error fetching licenses:', error);
-        }
-    };
 
     const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -169,7 +167,6 @@ export const ProfilePage = () => {
         if (token) {
             fetchUserData();
             fetchUserBills();
-            fetchUserLicenses();
         } else {
             navigate('/');
         }
@@ -198,10 +195,10 @@ export const ProfilePage = () => {
             <div
                 className={styles.blurBackground}
                 style={{
-                    background: colorPalette
-                        ? `linear-gradient(135deg, ${colorPalette[0]}, ${colorPalette[1]})`
-                        : 'linear-gradient(135deg, #888, #555)',
-                }}
+        background: palette 
+            ? `linear-gradient(135deg, ${palette[0]}, ${palette[1]})`
+            : 'linear-gradient(135deg, #888, #555)',
+    }}
             />
             <input
                 type="file"
@@ -257,10 +254,10 @@ export const ProfilePage = () => {
                 <div
                     className={styles.userCard}
                     style={{
-                        background: colorPalette
-                            ? `linear-gradient(90deg, ${colorPalette[0]}, ${colorPalette[1]})`
-                            : 'linear-gradient(90deg, #888, #555)',
-                    }}
+            background: palette 
+                ? `linear-gradient(90deg, ${palette[0]}, ${palette[1]})`
+                : 'linear-gradient(90deg, #888, #555)',
+        }}
                 >
                     <div className={styles.avatarContainer} onClick={handleAvatarClick}>
                         {user.avatar ? (
@@ -304,19 +301,16 @@ export const ProfilePage = () => {
 
                 <div className={styles.contentArea}>
                     {activeTab === 'My library' && (
-                        <div className={styles.licenseList}>
-                            {licenses.length === 0 ? (
+                        <div className={styles.gameGrid}>
+                            {products.length === 0 ? (
                                 <div className={styles.emptyState}>
                                     <MdSportsEsports className={styles.emptyIcon} />
-                                    <p>No licenses available</p>
-                                    <p className={styles.emptyHint}>Purchase products to receive licenses</p>
+                                    <p>No games in your library</p>
+                                    <p className={styles.emptyHint}>Purchase games to add them to your library</p>
                                 </div>
                             ) : (
-                                licenses.map((license) => (
-                                    <div key={license.id} className={styles.licenseCard}>
-                                        <div className={styles.licenseKey}>{license.license_key}</div>
-                                        <div className={styles.licenseStatus}>{license.status}</div>
-                                    </div>
+                                products.map((product) => (
+                                    <ProductCard key={product.id} product={product} />
                                 ))
                             )}
                         </div>

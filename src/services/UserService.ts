@@ -1,5 +1,6 @@
 ﻿// src/services/UserService.ts
 import BaseService from './BaseService';
+import type { Product } from '../models/Bill';
 
 class UserService extends BaseService {
     /**
@@ -107,6 +108,13 @@ class UserService extends BaseService {
             body: formData,
             headers: {} // Убираем Content-Type для FormData
         });
+    }
+
+    /**
+     * Получение продуктов пользователя (купленных через оплаченные счета)
+     */
+    async getUserProducts() {
+        return this.request<Product[]>('/user/products', { method: 'GET' });
     }
 }
 

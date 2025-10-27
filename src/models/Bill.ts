@@ -7,14 +7,26 @@ export interface BillItem {
     product?: Product;
 }
 
+export interface ProductFile {
+    id: number;
+    path: string;
+    fileName: string;
+    mimeType: string;
+    fileSize: number;
+    fileType?: string;
+    displayOrder?: number;
+}
+
 export interface Product {
     id: number;
     name: string;
     description: string;
     price: number;
     stock: number;
+    regionId?: number;
     createdAt: string;
     updatedAt?: string;
+    files?: ProductFile[];
 }
 
 export interface Bill {
