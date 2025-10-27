@@ -2,33 +2,39 @@
 import BaseService from './BaseService';
 import type { Product } from '../models/Bill';
 
+// Тип для данных логина
+type LoginData = {
+    email?: string;
+    password?: string;
+    googleJwtToken?: string;
+};
+
+// Тип для данных регистрации (теперь он такой же, как для логина)
+type RegisterData = {
+    email?: string;
+    password?: string;
+    googleJwtToken?: string;
+};
+
 class UserService extends BaseService {
     /**
      * Авторизация пользователя
-     *
-     * Бэкенд принимает POST /api/authorization/login
-     * с телом JSON:
-     * {
-     *   "email": "user@example.com",
-     *   "password": "123456"
-     * }
      */
-    async login(data: { email: string; password: string }) {
+    async login(data: LoginData) {
         return this.request<{ token?: string; message?: string }>('/authorization/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: data.email,
-                password: data.password,
-            }),
+            body: JSON.stringify(data),
         });
     }
 
     /**
      * Регистрация пользователя
      */
-    async register(data: { email: string; password: string }) {
-        return this.request<{ message?: string }>('/authorization/register', {
+    // 👇 ЗМІНА ТУТ: тепер приймаємо RegisterData
+    async register(data: RegisterData) {
+        // 👇 І ТУТ: очікуємо, що бекенд може повернути токен одразу
+        return this.request<{ token?: string; message?: string }>('/authorization/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -39,6 +45,7 @@ class UserService extends BaseService {
      * Получение профиля текущего пользователя по токену
      */
     async getProfile() {
+        // ... (остальной код без изменений)
         return this.request<{
             username: string;
             email: string;
@@ -86,6 +93,7 @@ class UserService extends BaseService {
      * Обновление информации пользователя (включая аватар)
      */
     async updateUser(data: { username?: string; email?: string; avatar?: File }) {
+        // ... (остальной код без изменений)
         const formData = new FormData();
 
         if (data.username) {

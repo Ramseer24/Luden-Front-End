@@ -1,10 +1,12 @@
 import styles from './styles.module.css';
 import loginPattern from '../../assets/login-pattern.jpg';
 import ludenLogo from '../../assets/luden-logo.svg';
-import googleIcon from '../../assets/google-icon.png';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import UserService from '../../services/UserService'; //подключаем наш сервис
+import UserService from '../../services/UserService';
+
+import { GoogleLogin } from '@react-oauth/google';
+import type { CredentialResponse } from '@react-oauth/google';
 
 export const RegistrationPage = () => {
     const navigate = useNavigate();
@@ -18,10 +20,21 @@ export const RegistrationPage = () => {
         navigate('/');
     };
 
+    const handleSuccessfulLogin = (token: string) => {
+        localStorage.setItem('authToken', token);
+        setMessage('✅ Login successful! Redirecting...');
+        setTimeout(() => navigate('/profile'), 500);
+    };
+
+    const handleFailedLogin = (error: any) => {
+        console.error('Login failed:', error);
+        const errorMessage = error.message || 'An unknown error occurred.';
+        setMessage(`❌ Error: ${errorMessage}`);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // простая проверка
         if (!email || !password || !confirmPassword) {
             alert('Please fill in all fields.');
             return;
@@ -34,35 +47,73 @@ export const RegistrationPage = () => {
 
         try {
             setMessage('⏳ Registering...');
+            await UserService.register({ email, password });
+            setMessage('✅ Registration successful! Logging in...');
 
-            // Пытаемся зарегистрироваться
-            try {
-                await UserService.register({ email, password });
-                setMessage('✅ Registration successful! Logging in...');
-            } catch (regError: any) {
-                // Если ошибка "EmailBusy" - это значит пользователь уже существует
-                if (regError.message?.includes('EmailBusy') || regError.message?.includes('400')) {
-                    setMessage('📧 Email already registered. Logging in...');
-                } else {
-                    // Другая ошибка - пробрасываем дальше
-                    throw regError;
-                }
-            }
-
-            // В любом случае (успешная регистрация или EmailBusy) пытаемся залогиниться
             const loginResult = await UserService.login({ email, password });
-
             if (loginResult?.token) {
-                localStorage.setItem('authToken', loginResult.token);
-                setMessage('✅ Login successful! Redirecting...');
-                setTimeout(() => navigate('/profile'), 500);
+                handleSuccessfulLogin(loginResult.token);
             } else {
                 setMessage('❌ Login failed. Please try logging in manually.');
                 setTimeout(() => navigate('/'), 2000);
             }
-        } catch (err: any) {
-            console.error(err);
-            setMessage('❌ Error: ' + err.message);
+        } catch (regError: any) {
+            if (regError.message?.includes('EmailBusy') || regError.message?.includes('400')) {
+                setMessage('📧 Email already registered. Logging in...');
+                try {
+                    const loginResult = await UserService.login({ email, password });
+                    if (loginResult?.token) {
+                        handleSuccessfulLogin(loginResult.token);
+                    } else {
+                        throw new Error('Login failed after finding existing account.');
+                    }
+                } catch (loginError) {
+                    handleFailedLogin(loginError);
+                }
+            } else {
+                handleFailedLogin(regError);
+            }
+        }
+    };
+
+    const handleGoogleLoginSuccess = async (response: CredentialResponse) => {
+        setMessage('⏳ Processing Google sign-in...');
+
+        if (!response.credential) {
+            handleFailedLogin(new Error('Google did not provide credentials.'));
+            return;
+        }
+
+        try {
+            setMessage('⏳ Creating account...');
+            const registrationResult = await UserService.register({ googleJwtToken: response.credential });
+            if (registrationResult?.token) {
+                handleSuccessfulLogin(registrationResult.token);
+            } else {
+                setMessage('✅ Registration complete! Logging in...');
+                const loginResult = await UserService.login({ googleJwtToken: response.credential });
+                if (loginResult?.token) {
+                    handleSuccessfulLogin(loginResult.token);
+                } else {
+                    handleFailedLogin(new Error('Could not log in after registration.'));
+                }
+            }
+        } catch (regError: any) {
+            if (regError.message?.includes('EmailBusy') || regError.response?.status === 400) {
+                setMessage('📧 Account already exists. Logging in...');
+                try {
+                    const loginResult = await UserService.login({ googleJwtToken: response.credential });
+                    if (loginResult?.token) {
+                        handleSuccessfulLogin(loginResult.token);
+                    } else {
+                        handleFailedLogin(new Error('Server did not return a token on login.'));
+                    }
+                } catch (loginError) {
+                    handleFailedLogin(loginError);
+                }
+            } else {
+                handleFailedLogin(regError);
+            }
         }
     };
 
@@ -97,14 +148,8 @@ export const RegistrationPage = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
-                            <span
-                                className={styles.clearIcon}
-                                onClick={() => clearInput('email')}
-                            >
-                                &times;
-                            </span>
+                            <span className={styles.clearIcon} onClick={() => clearInput('email')}>&times;</span>
                         </div>
-
                         <div className={styles.inputGroup}>
                             <label htmlFor="password">Password</label>
                             <input
@@ -114,14 +159,8 @@ export const RegistrationPage = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
-                            <span
-                                className={styles.clearIcon}
-                                onClick={() => clearInput('password')}
-                            >
-                                &times;
-                            </span>
+                            <span className={styles.clearIcon} onClick={() => clearInput('password')}>&times;</span>
                         </div>
-
                         <div className={styles.inputGroup}>
                             <label htmlFor="confirmPassword">Confirm password</label>
                             <input
@@ -131,29 +170,33 @@ export const RegistrationPage = () => {
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                             />
-                            <span
-                                className={styles.clearIcon}
-                                onClick={() => clearInput('confirmPassword')}
-                            >
-                                &times;
-                            </span>
+                            <span className={styles.clearIcon} onClick={() => clearInput('confirmPassword')}>&times;</span>
                         </div>
-
                         <button type="submit" className={styles.loginButton}>
                             Sign Up
                         </button>
                     </form>
 
-                    {message && <p style={{ marginTop: 10 }}>{message}</p>}
+                    {message && <p style={{ marginTop: 10, textAlign: 'center' }}>{message}</p>}
 
                     <div className={styles.divider}>
                         <span>OR</span>
                     </div>
 
-                    <button type="button" className={styles.googleButton}>
-                        <img src={googleIcon} alt="Google icon" className={styles.googleIcon} />
-                        Continue with Google
-                    </button>
+                    <div className={styles.googleButtonContainer}>
+                        <GoogleLogin
+                            onSuccess={handleGoogleLoginSuccess}
+                            onError={() => {
+                                setMessage('❌ Google login failed.');
+                            }}
+                            type="standard"
+                            theme="outline"
+                            size="large"
+                            text="continue_with"
+                            shape="rectangular"
+                            width="300px"
+                        />
+                    </div>
 
                     <p className={styles.signupText}>
                         Already have an account?{' '}
