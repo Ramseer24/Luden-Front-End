@@ -82,6 +82,35 @@
     transform: skewX(-6deg);
 }
 
+/* === КНОПКА ДОБАВЛЕНИЯ В КОРЗИНУ === */
+.addToCartButton {
+    position: absolute;
+    bottom: 140px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: none !important;
+    padding: 8px !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+    z-index: 10;
+}
+
+.addToCartButton:hover {
+    transform: scale(1.1) !important;
+    background: rgba(255, 255, 255, 1) !important;
+}
+
+.addToCartButton svg {
+    font-size: 20px !important;
+    color: #d32f2f !important;
+}
+
 /* Старая цена — красная, перечёркнутая */
 .oldPrice {
     font-size: 15px;

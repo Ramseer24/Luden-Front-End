@@ -3,6 +3,7 @@ import { useState } from 'react';
 import styles from './styles.module.css';
 import { GameCard } from '../../components/GameCard';
 import { SaleCard } from '../../components/SaleCard';
+import { Cart } from '../../components/Cart';
 import {
     MdSearch,
     MdShoppingCart,
@@ -14,6 +15,7 @@ import {
     MdCheck
 } from 'react-icons/md';
 import type { Game } from '../../models/Game.ts';
+import type { CartItem } from '../../models';
 
 const mockGames: Game[] = [
     {
@@ -117,6 +119,8 @@ export const StorePage = () => {
     const [selectedSale, setSelectedSale] = useState<string | null>(null);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [language, setLanguage] = useState<'en' | 'uk'>('en');
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
     // === ПЕРЕВОДЫ ===
     const translations = {
@@ -228,6 +232,40 @@ export const StorePage = () => {
 
     const isSaleView = activeNav === 'Sale' || !!selectedSale;
 
+    // === CART HANDLERS ===
+    const handleAddToCart = (game: Game) => {
+        const existingItem = cartItems.find(item => item.game.id === game.id);
+        if (existingItem) {
+            // Увеличиваем количество, если игра уже в корзине
+            setCartItems(prev =>
+                prev.map(item =>
+                    item.game.id === game.id ? { ...item, quantity: item.quantity + 1 } : item
+                )
+            );
+        } else {
+            // Добавляем новую игру в корзину
+            setCartItems(prev => [...prev, { game, quantity: 1, forMyAccount: true }]);
+        }
+    };
+
+    const handleUpdateQuantity = (gameId: number, quantity: number) => {
+        setCartItems(prev =>
+            prev.map(item => (item.game.id === gameId ? { ...item, quantity } : item))
+        );
+    };
+
+    const handleRemoveItem = (gameId: number) => {
+        setCartItems(prev => prev.filter(item => item.game.id !== gameId));
+    };
+
+    const handleToggleAccountType = (gameId: number) => {
+        setCartItems(prev =>
+            prev.map(item =>
+                item.game.id === gameId ? { ...item, forMyAccount: !item.forMyAccount } : item
+            )
+        );
+    };
+
     return (
         <div className={`${styles.storePage} ${isDarkMode ? styles.dark : ''}`}>
             {/* === Header === */}
@@ -251,7 +289,12 @@ export const StorePage = () => {
                             <MdWbSunny className={styles.sunIcon} />
                         )}
                     </button>
-                    <button aria-label="Shopping cart"><MdShoppingCart /></button>
+                    <button aria-label="Shopping cart" onClick={() => setIsCartOpen(true)}>
+                        <MdShoppingCart />
+                        {cartItems.length > 0 && (
+                            <span className={styles.cartBadge}>{cartItems.length}</span>
+                        )}
+                    </button>
                     <button
                         aria-label="Toggle language"
                         onClick={() => setLanguage(prev => (prev === 'en' ? 'uk' : 'en'))}
@@ -348,6 +391,7 @@ export const StorePage = () => {
                                     key={game.id}
                                     game={game}
                                     onToggleFavorite={toggleFavorite}
+                                    onAddToCart={handleAddToCart}
                                     isDarkMode={isDarkMode}
                                 />
                             );
@@ -357,12 +401,24 @@ export const StorePage = () => {
                                 key={game.id}
                                 game={game}
                                 onToggleFavorite={toggleFavorite}
+                                onAddToCart={handleAddToCart}
                                 isDarkMode={isDarkMode}
                             />
                         );
                     })
                 )}
             </main>
+
+            {/* === Cart Popup === */}
+            <Cart
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+                items={cartItems}
+                onUpdateQuantity={handleUpdateQuantity}
+                onRemoveItem={handleRemoveItem}
+                onToggleAccountType={handleToggleAccountType}
+                language={language}
+            />
         </div>
     );
 };

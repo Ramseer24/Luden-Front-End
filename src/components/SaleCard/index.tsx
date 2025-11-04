@@ -1,17 +1,19 @@
 // src/components/SaleCard.tsx
 import type { Game } from '../../models';
 import styles from './styles.module.css';
-import { MdStar, MdStarBorder } from 'react-icons/md';
+import { MdStar, MdStarBorder, MdShoppingCart } from 'react-icons/md';
 
 interface SaleCardProps {
     game: Game;
     onToggleFavorite?: (gameId: number) => void;
-    isDarkMode?: boolean; // ← НОВЫЙ ПРОПС
+    onAddToCart?: (game: Game) => void;
+    isDarkMode?: boolean;
 }
 
 export const SaleCard = ({
                              game,
                              onToggleFavorite,
+                             onAddToCart,
                              isDarkMode = false
                          }: SaleCardProps) => {
     const discountPercent = game.discountPercent;
@@ -65,6 +67,20 @@ export const SaleCard = ({
                     <div className={styles.discountBadge}>
                         -{discountPercent}%
                     </div>
+                )}
+
+                {/* Кнопка добавления в корзину */}
+                {onAddToCart && (
+                    <button
+                        className={styles.addToCartButton}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onAddToCart(game);
+                        }}
+                        aria-label="Add to cart"
+                    >
+                        <MdShoppingCart />
+                    </button>
                 )}
 
                 {/* Панель с ценой */}

@@ -1,15 +1,16 @@
 // src/components/GameCard.tsx
 import type { Game } from '../../models';
 import styles from './styles.module.css';
-import { MdStar, MdStarBorder } from 'react-icons/md';
+import { MdStar, MdStarBorder, MdShoppingCart } from 'react-icons/md';
 
 interface GameCardProps {
     game: Game;
     onToggleFavorite?: (gameId: number) => void;
-    isDarkMode?: boolean; // ← НОВЫЙ ПРОПС
+    onAddToCart?: (game: Game) => void;
+    isDarkMode?: boolean;
 }
 
-export const GameCard = ({ game, onToggleFavorite, isDarkMode = false }: GameCardProps) => {
+export const GameCard = ({ game, onToggleFavorite, onAddToCart, isDarkMode = false }: GameCardProps) => {
     const discountPercent = game.discountPercent;
 
     const priceStr = game.price ?? '';
@@ -50,6 +51,19 @@ export const GameCard = ({ game, onToggleFavorite, isDarkMode = false }: GameCar
                     <span className={styles.price}>{displayPrice}</span>
                     {game.genre && <span className={styles.genre}>{game.genre}</span>}
                 </div>
+
+                {onAddToCart && (
+                    <button
+                        className={styles.addToCartButton}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onAddToCart(game);
+                        }}
+                        aria-label="Add to cart"
+                    >
+                        <MdShoppingCart />
+                    </button>
+                )}
             </div>
 
             <p className={styles.gameTitle}>{game.title}</p>
