@@ -1,72 +1,143 @@
+/* src/components/GameCard.module.css */
+
+/* === ОСНОВНЫЕ СТИЛИ === */
 .gameCard {
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
     cursor: pointer;
-    position: relative;
+    width: 100%;
+}
+
+.gameCard.dark {
+    background: #1e1e1e !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 
 .gameCard:hover {
-    transform: translateY(-4px);
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* === Обёртка изображения === */
+.gameImageWrapper {
+    position: relative;
+    height: 280px;
+    background: #FFD60A;
+    overflow: hidden;
 }
 
 .gameImage {
     width: 100%;
-    height: 260px;
+    height: 100%;
     object-fit: cover;
+    object-position: center;
     display: block;
 }
 
-.gameInfo {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 15px 10px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-    backdrop-filter: blur(5px);
-}
-
-.gameTitle {
-    margin: 0;
-    color: #ffffff;
-    font-weight: 600;
-    font-size: 16px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
+/* === КНОПКА ИЗБРАННОГО === */
 .favoriteButton {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    top: 12px;
+    left: 12px;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    width: 36px !important;
+    height: 36px !important;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
-    backdrop-filter: blur(5px);
+    transition: transform 0.2s ease;
     z-index: 10;
 }
 
 .favoriteButton:hover {
-    background: rgba(0, 0, 0, 0.8);
-    transform: scale(1.1);
+    transform: scale(1.2) !important;
 }
 
-.favoriteIcon {
-    font-size: 24px;
-    color: #ffffff;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-}
-
+/* Звёзды — всегда красные */
+.favoriteIcon,
 .favoriteIconFilled {
-    font-size: 24px;
-    color: #FFD700;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    font-size: 28px !important;
+    color: #B93838 !important;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* === ПЛАШКА: ЦЕНА + ЖАНР === */
+.infoPanel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(6px);
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    border-radius: 8px 8px 0 0;
+    gap: 8px;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ТЁМНАЯ ТЕМА: ЧЁРНАЯ ПЛАШКА */
+.gameCard.dark .infoPanel {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* === ЦЕНА === */
+.price {
+    font-weight: 700;
+    font-size: 14px;
+    color: #000;
+    transition: color 0.3s ease;
+}
+
+.gameCard.dark .price {
+    color: #ffffff !important;
+}
+
+/* === ЖАНР === */
+.genre {
+    background: rgba(0, 0, 0, 0.08);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.gameCard.dark .genre {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+}
+
+/* === НАЗВАНИЕ ИГРЫ === */
+.gameTitle {
+    margin: 12px 0 0;
+    padding: 0 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #000;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.3s ease;
+}
+
+.gameCard.dark .gameTitle {
+    color: #ffffff !important;
+}
+
+/* === Плавные переходы === */
+* {
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
