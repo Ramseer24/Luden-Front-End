@@ -19,7 +19,7 @@ const mockGames: Game[] = [
     {
         id: 1,
         title: 'Cyberpunk 2077',
-        image: '/src/assets/game-silksong.jpg',
+        image: '/src/assets/game-cyberpunk.jpg',
         price: '1 39 €',
         genre: 'Open World',
         isFavorite: false,
@@ -28,7 +28,7 @@ const mockGames: Game[] = [
     {
         id: 2,
         title: 'The Witcher 3',
-        image: '/src/assets/game-silksong.jpg',
+        image: '/src/assets/game-cyberpunk.jpg',
         price: '79 €',
         genre: 'RPG',
         isFavorite: true,
@@ -37,7 +37,7 @@ const mockGames: Game[] = [
     {
         id: 3,
         title: 'DOOM Eternal',
-        image: '/src/assets/game-silksong.jpg',
+        image: '/src/assets/game-cyberpunk.jpg',
         price: '15 €',
         genre: 'Shooter',
         isFavorite: false,
@@ -46,7 +46,7 @@ const mockGames: Game[] = [
     {
         id: 4,
         title: 'Hollow Knight',
-        image: '/src/assets/game-silksong.jpg',
+        image: '/src/assets/game-cyberpunk.jpg',
         price: '50 €',
         genre: 'Indie',
         isFavorite: true,
@@ -55,7 +55,7 @@ const mockGames: Game[] = [
     {
         id: 5,
         title: 'Civilization VI',
-        image: '/src/assets/game-silksong.jpg',
+        image: '/src/assets/game-cyberpunk.jpg',
         price: '11 €',
         genre: 'Strategy',
         isFavorite: false,
@@ -64,7 +64,7 @@ const mockGames: Game[] = [
     {
         id: 6,
         title: 'Outlast 2',
-        image: '/src/assets/game-silksong.jpg',
+        image: '/src/assets/game-cyberpunk.jpg',
         price: '49 €',
         genre: 'Horror',
         isFavorite: false,
@@ -73,7 +73,7 @@ const mockGames: Game[] = [
     {
         id: 7,
         title: 'Need for Speed',
-        image: '/src/assets/game-silksong.jpg',
+        image: '/src/assets/game-cyberpunk.jpg',
         price: '159 €',
         genre: 'Racing',
         isFavorite: false,
@@ -82,7 +82,7 @@ const mockGames: Game[] = [
     {
         id: 8,
         title: 'GTA V',
-        image: '/src/assets/game-silksong.jpg',
+        image: '/src/assets/game-cyberpunk.jpg',
         price: '79 €',
         genre: 'Open World',
         isFavorite: true,
@@ -91,7 +91,7 @@ const mockGames: Game[] = [
     {
         id: 9,
         title: 'Portal 2',
-        image: '/src/assets/game-silksong.jpg',
+        image: '/src/assets/game-cyberpunk.jpg',
         price: '19 €',
         genre: 'Action',
         isFavorite: false,
@@ -100,7 +100,7 @@ const mockGames: Game[] = [
     {
         id: 10,
         title: 'Stardew Valley',
-        image: '/src/assets/game-silksong.jpg',
+        image: '/src/assets/game-cyberpunk.jpg',
         price: '29 €',
         genre: 'Indie',
         isFavorite: true,
