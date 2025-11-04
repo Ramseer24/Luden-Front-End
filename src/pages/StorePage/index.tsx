@@ -4,6 +4,7 @@ import styles from './styles.module.css';
 import { GameCard } from '../../components/GameCard';
 import { SaleCard } from '../../components/SaleCard';
 import { Cart } from '../../components/Cart';
+import { translations } from '../../locales/translations';
 import {
     MdSearch,
     MdShoppingCart,
@@ -121,46 +122,20 @@ export const StorePage = () => {
     const [language, setLanguage] = useState<'en' | 'uk'>('en');
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
 
-    // === ПЕРЕВОДЫ ===
-    const translations = {
-        en: {
-            recommendations: 'Recommendations',
-            categories: 'Categories',
-            sale: 'Sale',
-            searchPlaceholder: 'Search',
-            allGames: 'All Games',
-            off50: '50%+ Off',
-            off30: '30%+ Off',
-            under10: 'Under 10€',
-            freeGames: 'Free Games',
-            noGames: 'No games found.',
-        },
-        uk: {
-            recommendations: 'Рекомендації',
-            categories: 'Категорії',
-            sale: 'Розпродаж',
-            searchPlaceholder: 'Пошук',
-            allGames: 'Всі ігри',
-            off50: '50%+ Знижка',
-            off30: '30%–49% Знижка',
-            under10: 'До 10€',
-            freeGames: 'Безкоштовні ігри',
-            noGames: 'Ігор не знайдено.',
-        },
-    };
     const t = translations[language];
 
     // === ЖАНРЫ (оригинальные названия в данных) ===
     const genres = [
-        { en: 'Open World', uk: 'Відкритий світ' },
-        { en: 'RPG', uk: 'RPG' },
-        { en: 'Action', uk: 'Екшн' },
-        { en: 'Shooter', uk: 'Шутер' },
-        { en: 'Indie', uk: 'Інді' },
-        { en: 'Strategy', uk: 'Стратегія' },
-        { en: 'Horror', uk: 'Жахи' },
-        { en: 'Racing', uk: 'Гонки' },
+        { key: 'openWorld', value: 'Open World' },
+        { key: 'rpg', value: 'RPG' },
+        { key: 'action', value: 'Action' },
+        { key: 'shooter', value: 'Shooter' },
+        { key: 'indie', value: 'Indie' },
+        { key: 'strategy', value: 'Strategy' },
+        { key: 'horror', value: 'Horror' },
+        { key: 'racing', value: 'Racing' },
     ];
 
     const toggleFavorite = (id: number) => {
@@ -180,11 +155,11 @@ export const StorePage = () => {
         setFilteredGames(mockGames);
     };
 
-    const filterByGenre = (genreEn: string) => {
-        setSelectedGenre(genreEn);
+    const filterByGenre = (genreValue: string) => {
+        setSelectedGenre(genreValue);
         setSelectedSale(null);
         setActiveNav('Categories');
-        setFilteredGames(mockGames.filter(g => g.genre === genreEn));
+        setFilteredGames(mockGames.filter(g => g.genre === genreValue));
         setShowCategories(false);
     };
 
@@ -266,6 +241,10 @@ export const StorePage = () => {
         );
     };
 
+    const handleClearCart = () => {
+        setCartItems([]);
+    };
+
     return (
         <div className={`${styles.storePage} ${isDarkMode ? styles.dark : ''}`}>
             {/* === Header === */}
@@ -295,12 +274,36 @@ export const StorePage = () => {
                             <span className={styles.cartBadge}>{cartItems.length}</span>
                         )}
                     </button>
-                    <button
-                        aria-label="Toggle language"
-                        onClick={() => setLanguage(prev => (prev === 'en' ? 'uk' : 'en'))}
-                    >
-                        <MdLanguage />
-                    </button>
+                    <div className={styles.languageDropdown}>
+                        <button
+                            aria-label="Toggle language"
+                            onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+                        >
+                            <MdLanguage />
+                        </button>
+                        {showLanguageDropdown && (
+                            <div className={styles.languageMenu}>
+                                <button
+                                    className={`${styles.languageOption} ${language === 'en' ? styles.active : ''}`}
+                                    onClick={() => {
+                                        setLanguage('en');
+                                        setShowLanguageDropdown(false);
+                                    }}
+                                >
+                                    English
+                                </button>
+                                <button
+                                    className={`${styles.languageOption} ${language === 'uk' ? styles.active : ''}`}
+                                    onClick={() => {
+                                        setLanguage('uk');
+                                        setShowLanguageDropdown(false);
+                                    }}
+                                >
+                                    Українська
+                                </button>
+                            </div>
+                        )}
+                    </div>
                     <button className={styles.profileBtn}>
                         <MdAccountCircle /><span>nickname</span>
                     </button>
@@ -331,12 +334,12 @@ export const StorePage = () => {
                         <div className={styles.dropdownMenu}>
                             {genres.map(g => (
                                 <button
-                                    key={g.en}
+                                    key={g.value}
                                     className={styles.dropdownItem}
-                                    onClick={() => filterByGenre(g.en)}
+                                    onClick={() => filterByGenre(g.value)}
                                 >
-                                    <span>{language === 'en' ? g.en : g.uk}</span>
-                                    {selectedGenre === g.en && <MdCheck className={styles.checkIcon} />}
+                                    <span>{t[g.key as keyof typeof t]}</span>
+                                    {selectedGenre === g.value && <MdCheck className={styles.checkIcon} />}
                                 </button>
                             ))}
                         </div>
@@ -417,6 +420,7 @@ export const StorePage = () => {
                 onUpdateQuantity={handleUpdateQuantity}
                 onRemoveItem={handleRemoveItem}
                 onToggleAccountType={handleToggleAccountType}
+                onClearCart={handleClearCart}
                 language={language}
             />
         </div>

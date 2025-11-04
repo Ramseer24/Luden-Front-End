@@ -1,13 +1,15 @@
 /* SaleCard — акционная карточка */
 .saleCard {
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
     cursor: pointer;
     background: #fff;
     width: 100%;
     border: 2px solid #B93838;
+    display: flex;
+    flex-direction: column;
 }
 
 .saleCard.dark {
@@ -27,6 +29,7 @@
     height: 280px;
     background: #f4f4f4;
     overflow: hidden;
+    border-radius: 12px 12px 0 0;
 }
 
 .gameImage {
@@ -85,7 +88,7 @@
 /* === КНОПКА ДОБАВЛЕНИЯ В КОРЗИНУ === */
 .addToCartButton {
     position: absolute;
-    bottom: 140px;
+    bottom: 60px;
     right: 12px;
     background: rgba(255, 255, 255, 0.9) !important;
     border: none !important;
@@ -163,8 +166,8 @@
 
 /* Заголовок */
 .gameTitle {
-    margin: 12px 0 0;
-    padding: 0 12px;
+    margin: 0;
+    padding: 12px;
     font-size: 16px;
     font-weight: 700;
     color: #000;
@@ -173,6 +176,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     transition: color 0.3s ease;
+    background: inherit;
+    border-radius: 0 0 12px 12px;
 }
 
 .saleCard.dark .gameTitle {

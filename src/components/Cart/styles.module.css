@@ -269,6 +269,10 @@
     color: #1a1a1a;
 }
 
+.dropdown {
+    position: relative;
+}
+
 .countryBtn {
     width: 100%;
     padding: 12px 16px;
@@ -286,6 +290,42 @@
 .countryBtn:hover {
     border-color: #c0c0c0;
     background: #efefef;
+}
+
+.countryDropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-top: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.countryOption {
+    width: 100%;
+    padding: 12px 16px;
+    background: white;
+    border: none;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: #333;
+}
+
+.countryOption:hover {
+    background: #f5f5f5;
+}
+
+.countryOption:not(:last-child) {
+    border-bottom: 1px solid #f0f0f0;
 }
 
 .totalRow {
@@ -400,6 +440,26 @@
 
 .paymentBtn:hover {
     background: #b71c1c;
+}
+
+/* Clear cart button */
+.clearCartBtn {
+    width: 100%;
+    padding: 12px;
+    background: white;
+    color: #d32f2f;
+    border: 2px solid #d32f2f;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: all 0.2s;
+}
+
+.clearCartBtn:hover {
+    background: #d32f2f;
+    color: white;
 }
 
 /* Scrollbar styling */

@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { MdClose, MdDelete, MdKeyboardArrowDown } from 'react-icons/md';
 import type { CartItem } from '../../models';
+import { translations } from '../../locales/translations';
 import styles from './styles.module.css';
+
+type Country = {
+    nameKey: string;
+    currency: string;
+    symbol: string;
+};
 
 interface CartProps {
     isOpen: boolean;
@@ -10,6 +17,7 @@ interface CartProps {
     onUpdateQuantity: (gameId: number, quantity: number) => void;
     onRemoveItem: (gameId: number) => void;
     onToggleAccountType: (gameId: number) => void;
+    onClearCart: () => void;
     language?: 'en' | 'uk';
 }
 
@@ -20,54 +28,42 @@ export const Cart = ({
     onUpdateQuantity,
     onRemoveItem,
     onToggleAccountType,
+    onClearCart,
     language = 'en',
 }: CartProps) => {
-    const [country, setCountry] = useState<'Ukraine' | 'Other'>('Ukraine');
-    const [bonusInput, setBonusInput] = useState('');
+    const countries: Country[] = [
+        { nameKey: 'ukraine', currency: 'UAH', symbol: '₴' },
+        { nameKey: 'usa', currency: 'USD', symbol: '$' },
+        { nameKey: 'poland', currency: 'PLN', symbol: 'zł' },
+        { nameKey: 'spain', currency: 'EUR', symbol: '€' },
+        { nameKey: 'bulgaria', currency: 'BGN', symbol: 'лв' },
+        { nameKey: 'germany', currency: 'EUR', symbol: '€' },
+        { nameKey: 'france', currency: 'EUR', symbol: '€' },
+        { nameKey: 'italy', currency: 'EUR', symbol: '€' },
+        { nameKey: 'czechRepublic', currency: 'CZK', symbol: 'Kč' },
+        { nameKey: 'romania', currency: 'RON', symbol: 'lei' },
+    ];
 
-    const translations = {
-        en: {
-            shoppingCart: 'Shopping cart',
-            continueShopping: 'Continue shopping',
-            forMyAccount: 'For my account',
-            forGift: 'For gift',
-            country: 'Country',
-            total: 'Total:',
-            bonusesLuden: 'Bonuses Luden',
-            useAvailableBonuses: 'Use available bonuses',
-            apply: 'Apply',
-            totalAmount: 'Total amount:',
-            reward: 'Reward:',
-            bonusesLudenReward: 'Bonuses Luden',
-            goToPayment: 'Go to payment',
-        },
-        uk: {
-            shoppingCart: '>H8:',
-            continueShopping: '@>4>268B8 ?>:C?:8',
-            forMyAccount: ';O <>3> 0:0C=BC',
-            forGift: '# ?>40@C=>:',
-            country: '@0W=0',
-            total: 'AL>3>:',
-            bonusesLuden: '>=CA8 Luden',
-            useAvailableBonuses: '8:>@8AB0B8 4>ABC?=V 1>=CA8',
-            apply: '0AB>AC20B8',
-            totalAmount: '030;L=0 AC<0:',
-            reward: '8=03>@>40:',
-            bonusesLudenReward: '>=CAV2 Luden',
-            goToPayment: '5@59B8 4> >?;0B8',
-        },
-    };
+    const [selectedCountry, setSelectedCountry] = useState<Country>(countries[0]);
+    const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+    const [bonusInput, setBonusInput] = useState('');
 
     const t = translations[language];
 
-    // $C=:F8O 4;O ?0@A8=30 F5=K 87 AB@>:8 2840 "515 �"
+    // Функция для парсинга цены из строки вида "515 ₴"
     const parsePrice = (priceStr?: string): number => {
         if (!priceStr) return 0;
         const match = priceStr.match(/\d+/);
         return match ? parseInt(match[0], 10) : 0;
     };
 
-    // >4AG5B >1I59 AC<<K
+    // Функция для форматирования цены с учетом выбранной валюты
+    const formatPrice = (priceStr?: string): string => {
+        const price = parsePrice(priceStr);
+        return `${price} ${selectedCountry.symbol}`;
+    };
+
+    // Подсчет общей суммы
     const calculateTotal = (): number => {
         return items.reduce((sum, item) => {
             const price = parsePrice(item.game.price);
@@ -76,7 +72,7 @@ export const Cart = ({
     };
 
     const total = calculateTotal();
-    const bonuses = Math.floor(total * 0.1); // 10% 1>=CA>2
+    const bonuses = Math.floor(total * 0.1); // 10% бонусов
 
     if (!isOpen) return null;
 
@@ -99,60 +95,68 @@ export const Cart = ({
                     {/* Left side - Items */}
                     <div className={styles.itemsList}>
                         {items.length === 0 ? (
-                            <p className={styles.emptyCart}>Your cart is empty</p>
+                            <p className={styles.emptyCart}>{t.emptyCart}</p>
                         ) : (
-                            items.map(item => (
-                                <div key={item.game.id} className={styles.cartItem}>
-                                    <img
-                                        src={item.game.image}
-                                        alt={item.game.title}
-                                        className={styles.gameImage}
-                                    />
-                                    <div className={styles.itemInfo}>
-                                        <h3>{item.game.title}</h3>
-                                        <div className={styles.accountType}>
-                                            <button
-                                                className={styles.accountTypeBtn}
-                                                onClick={() => onToggleAccountType(item.game.id)}
-                                            >
-                                                {item.forMyAccount ? t.forMyAccount : t.forGift}
-                                                <MdKeyboardArrowDown />
-                                            </button>
-                                        </div>
-                                        <div className={styles.quantityControl}>
-                                            <span>{t.total}</span>
-                                            <div className={styles.quantityButtons}>
+                            <>
+                                {items.map(item => (
+                                    <div key={item.game.id} className={styles.cartItem}>
+                                        <img
+                                            src={item.game.image}
+                                            alt={item.game.title}
+                                            className={styles.gameImage}
+                                        />
+                                        <div className={styles.itemInfo}>
+                                            <h3>{item.game.title}</h3>
+                                            <div className={styles.accountType}>
                                                 <button
-                                                    onClick={() =>
-                                                        onUpdateQuantity(
-                                                            item.game.id,
-                                                            Math.max(1, item.quantity - 1)
-                                                        )
-                                                    }
+                                                    className={styles.accountTypeBtn}
+                                                    onClick={() => onToggleAccountType(item.game.id)}
                                                 >
-                                                    -
-                                                </button>
-                                                <span>{item.quantity}</span>
-                                                <button
-                                                    onClick={() =>
-                                                        onUpdateQuantity(item.game.id, item.quantity + 1)
-                                                    }
-                                                >
-                                                    +
+                                                    {item.forMyAccount ? t.forMyAccount : t.forGift}
+                                                    <MdKeyboardArrowDown />
                                                 </button>
                                             </div>
-                                            <span className={styles.itemPrice}>{item.game.price}</span>
+                                            <div className={styles.quantityControl}>
+                                                <span>{t.total}</span>
+                                                <div className={styles.quantityButtons}>
+                                                    <button
+                                                        onClick={() =>
+                                                            onUpdateQuantity(
+                                                                item.game.id,
+                                                                Math.max(1, item.quantity - 1)
+                                                            )
+                                                        }
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <span>{item.quantity}</span>
+                                                    <button
+                                                        onClick={() =>
+                                                            onUpdateQuantity(item.game.id, item.quantity + 1)
+                                                        }
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                                <span className={styles.itemPrice}>
+                                                    {formatPrice(item.game.price)}
+                                                </span>
+                                            </div>
                                         </div>
+                                        <button
+                                            className={styles.deleteBtn}
+                                            onClick={() => onRemoveItem(item.game.id)}
+                                            aria-label="Delete item"
+                                        >
+                                            <MdDelete />
+                                        </button>
                                     </div>
-                                    <button
-                                        className={styles.deleteBtn}
-                                        onClick={() => onRemoveItem(item.game.id)}
-                                        aria-label="Delete item"
-                                    >
-                                        <MdDelete />
-                                    </button>
-                                </div>
-                            ))
+                                ))}
+                                {/* Clear cart button */}
+                                <button className={styles.clearCartBtn} onClick={onClearCart}>
+                                    {t.clearCart}
+                                </button>
+                            </>
                         )}
                     </div>
 
@@ -160,14 +164,38 @@ export const Cart = ({
                     <div className={styles.summary}>
                         <div className={styles.countrySelect}>
                             <label>{t.country}</label>
-                            <button className={styles.countryBtn}>
-                                {country} ({items.length}) <MdKeyboardArrowDown />
-                            </button>
+                            <div className={styles.dropdown}>
+                                <button
+                                    className={styles.countryBtn}
+                                    onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                                >
+                                    {t[selectedCountry.nameKey as keyof typeof t]} ({selectedCountry.currency}){' '}
+                                    <MdKeyboardArrowDown />
+                                </button>
+                                {showCountryDropdown && (
+                                    <div className={styles.countryDropdown}>
+                                        {countries.map(country => (
+                                            <button
+                                                key={country.nameKey}
+                                                className={styles.countryOption}
+                                                onClick={() => {
+                                                    setSelectedCountry(country);
+                                                    setShowCountryDropdown(false);
+                                                }}
+                                            >
+                                                {t[country.nameKey as keyof typeof t]} ({country.currency})
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className={styles.totalRow}>
                             <span>{t.total}</span>
-                            <span className={styles.totalPrice}>{total} �</span>
+                            <span className={styles.totalPrice}>
+                                {total} {selectedCountry.symbol}
+                            </span>
                         </div>
 
                         <div className={styles.bonusSection}>
@@ -185,7 +213,9 @@ export const Cart = ({
                         <div className={styles.finalTotal}>
                             <div className={styles.finalRow}>
                                 <span>{t.totalAmount}</span>
-                                <span className={styles.finalPrice}>{total} �</span>
+                                <span className={styles.finalPrice}>
+                                    {total} {selectedCountry.symbol}
+                                </span>
                             </div>
                             <div className={styles.rewardRow}>
                                 <span>
