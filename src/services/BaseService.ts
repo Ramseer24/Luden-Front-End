@@ -27,16 +27,16 @@ class BaseService {
 
         if (!skipAuth) {
             const token = this.getToken();
-            if (!token) throw new Error('Требуется авторизация');
+            if (!token) throw new Error('Необхідна авторизація');
             (headers as any).Authorization = `Bearer ${token}`;
         }
 
         const res = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
 
         if (!res.ok) {
-            if (res.status === 401) throw new Error('Необходима авторизация');
+            if (res.status === 401) throw new Error('Необхідна авторизація');
             const text = await res.text();
-            throw new Error(`Ошибка API ${res.status}: ${text}`);
+            throw new Error(`Помилка API ${res.status}: ${text}`);
         }
 
         const ct = res.headers.get('content-type');

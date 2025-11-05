@@ -5,4 +5,5 @@ export interface Game {
     price?: string;
     genre?: string;
     isFavorite?: boolean;
+    discountPercent: number | null;
 }
