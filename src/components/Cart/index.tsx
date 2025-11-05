@@ -1,4 +1,3 @@
-// src/components/Cart.tsx
 import { useState } from 'react';
 import { MdDelete, MdKeyboardArrowDown } from 'react-icons/md';
 import type { CartItem } from '../../models';
@@ -20,7 +19,7 @@ interface CartProps {
     onToggleAccountType: (gameId: number) => void;
     onClearCart: () => void;
     language?: 'en' | 'uk';
-    isDarkMode?: boolean; // ← НОВЫЙ ПРОПС
+    isDarkMode?: boolean;
 }
 
 export const Cart = ({
@@ -81,7 +80,10 @@ export const Cart = ({
     return (
         <>
             {/* Overlay */}
-            <div className={`${styles.overlay} ${isDarkMode ? styles.dark : ''}`} onClick={onClose} />
+            <div
+                className={`${styles.overlay} ${isDarkMode ? styles.dark : ''}`}
+                onClick={onClose}
+            />
 
             {/* Cart popup */}
             <div className={`${styles.cartPopup} ${isDarkMode ? styles.dark : ''}`}>
@@ -168,13 +170,15 @@ export const Cart = ({
                             <div className={styles.dropdown}>
                                 <button
                                     className={styles.countryBtn}
-                                    onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                                    onClick={() => setShowCountryDropdown(prev => !prev)}
                                 >
                                     {countryNames[selectedCountry.nameKey as keyof typeof countryNames]} ({selectedCountry.currency})
-                                    <MdKeyboardArrowDown />
+                                    <MdKeyboardArrowDown
+                                        className={`${styles.arrow} ${showCountryDropdown ? styles.rotated : ''}`}
+                                    />
                                 </button>
                                 {showCountryDropdown && (
-                                    <div className={styles.countryDropdown}>
+                                    <div className={`${styles.countryDropdown} ${styles.visible}`}>
                                         {countries.map(country => (
                                             <button
                                                 key={country.nameKey}
