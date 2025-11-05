@@ -4,7 +4,7 @@ import styles from './styles.module.css';
 import { GameCard } from '../../components/GameCard';
 import { SaleCard } from '../../components/SaleCard';
 import { Cart } from '../../components/Cart';
-import { translations } from '../../locales/translations';
+import { translations } from '../../locales';
 import {
     MdSearch,
     MdShoppingCart,
@@ -128,14 +128,14 @@ export const StorePage = () => {
 
     // === ЖАНРЫ (оригинальные названия в данных) ===
     const genres = [
-        { key: 'openWorld', value: 'Open World' },
-        { key: 'rpg', value: 'RPG' },
-        { key: 'action', value: 'Action' },
-        { key: 'shooter', value: 'Shooter' },
-        { key: 'indie', value: 'Indie' },
-        { key: 'strategy', value: 'Strategy' },
-        { key: 'horror', value: 'Horror' },
-        { key: 'racing', value: 'Racing' },
+        { key: 'openWorld', value: 'Open World', translationKey: 'openWorld' },
+        { key: 'rpg', value: 'RPG', translationKey: 'rpg' },
+        { key: 'action', value: 'Action', translationKey: 'action' },
+        { key: 'shooter', value: 'Shooter', translationKey: 'shooter' },
+        { key: 'indie', value: 'Indie', translationKey: 'indie' },
+        { key: 'strategy', value: 'Strategy', translationKey: 'strategy' },
+        { key: 'horror', value: 'Horror', translationKey: 'horror' },
+        { key: 'racing', value: 'Racing', translationKey: 'racing' },
     ];
 
     const toggleFavorite = (id: number) => {
@@ -338,7 +338,7 @@ export const StorePage = () => {
                                     className={styles.dropdownItem}
                                     onClick={() => filterByGenre(g.value)}
                                 >
-                                    <span>{t[g.key as keyof typeof t]}</span>
+                                    <span>{t.genres[g.translationKey as keyof typeof t.genres]}</span>
                                     {selectedGenre === g.value && <MdCheck className={styles.checkIcon} />}
                                 </button>
                             ))}

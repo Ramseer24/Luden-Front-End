@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { MdClose, MdDelete, MdKeyboardArrowDown } from 'react-icons/md';
+import { MdDelete, MdKeyboardArrowDown } from 'react-icons/md';
 import type { CartItem } from '../../models';
-import { translations } from '../../locales/translations';
+import { translations } from '../../locales';
 import styles from './styles.module.css';
 
 type Country = {
@@ -49,6 +49,8 @@ export const Cart = ({
     const [bonusInput, setBonusInput] = useState('');
 
     const t = translations[language];
+    const cart = t.cart;
+    const countryNames = t.countries;
 
     // Функция для парсинга цены из строки вида "515 ₴"
     const parsePrice = (priceStr?: string): number => {
@@ -85,9 +87,9 @@ export const Cart = ({
             <div className={styles.cartPopup}>
                 {/* Header */}
                 <div className={styles.header}>
-                    <h2>{t.shoppingCart}</h2>
+                    <h2>{cart.shoppingCart}</h2>
                     <button className={styles.continueBtn} onClick={onClose}>
-                        {t.continueShopping}
+                        {cart.continueShopping}
                     </button>
                 </div>
 
@@ -95,7 +97,7 @@ export const Cart = ({
                     {/* Left side - Items */}
                     <div className={styles.itemsList}>
                         {items.length === 0 ? (
-                            <p className={styles.emptyCart}>{t.emptyCart}</p>
+                            <p className={styles.emptyCart}>{cart.emptyCart}</p>
                         ) : (
                             <>
                                 {items.map(item => (
@@ -112,12 +114,12 @@ export const Cart = ({
                                                     className={styles.accountTypeBtn}
                                                     onClick={() => onToggleAccountType(item.game.id)}
                                                 >
-                                                    {item.forMyAccount ? t.forMyAccount : t.forGift}
+                                                    {item.forMyAccount ? cart.forMyAccount : cart.forGift}
                                                     <MdKeyboardArrowDown />
                                                 </button>
                                             </div>
                                             <div className={styles.quantityControl}>
-                                                <span>{t.total}</span>
+                                                <span>{cart.total}</span>
                                                 <div className={styles.quantityButtons}>
                                                     <button
                                                         onClick={() =>
@@ -154,7 +156,7 @@ export const Cart = ({
                                 ))}
                                 {/* Clear cart button */}
                                 <button className={styles.clearCartBtn} onClick={onClearCart}>
-                                    {t.clearCart}
+                                    {cart.clearCart}
                                 </button>
                             </>
                         )}
@@ -163,13 +165,13 @@ export const Cart = ({
                     {/* Right side - Summary */}
                     <div className={styles.summary}>
                         <div className={styles.countrySelect}>
-                            <label>{t.country}</label>
+                            <label>{cart.country}</label>
                             <div className={styles.dropdown}>
                                 <button
                                     className={styles.countryBtn}
                                     onClick={() => setShowCountryDropdown(!showCountryDropdown)}
                                 >
-                                    {t[selectedCountry.nameKey as keyof typeof t]} ({selectedCountry.currency}){' '}
+                                    {countryNames[selectedCountry.nameKey as keyof typeof countryNames]} ({selectedCountry.currency}){' '}
                                     <MdKeyboardArrowDown />
                                 </button>
                                 {showCountryDropdown && (
@@ -183,7 +185,7 @@ export const Cart = ({
                                                     setShowCountryDropdown(false);
                                                 }}
                                             >
-                                                {t[country.nameKey as keyof typeof t]} ({country.currency})
+                                                {countryNames[country.nameKey as keyof typeof countryNames]} ({country.currency})
                                             </button>
                                         ))}
                                     </div>
@@ -192,39 +194,39 @@ export const Cart = ({
                         </div>
 
                         <div className={styles.totalRow}>
-                            <span>{t.total}</span>
+                            <span>{cart.total}</span>
                             <span className={styles.totalPrice}>
                                 {total} {selectedCountry.symbol}
                             </span>
                         </div>
 
                         <div className={styles.bonusSection}>
-                            <h3>{t.bonusesLuden}</h3>
+                            <h3>{cart.bonusesLuden}</h3>
                             <input
                                 type="text"
-                                placeholder={t.useAvailableBonuses}
+                                placeholder={cart.useAvailableBonuses}
                                 value={bonusInput}
                                 onChange={e => setBonusInput(e.target.value)}
                                 className={styles.bonusInput}
                             />
-                            <button className={styles.applyBtn}>{t.apply}</button>
+                            <button className={styles.applyBtn}>{cart.apply}</button>
                         </div>
 
                         <div className={styles.finalTotal}>
                             <div className={styles.finalRow}>
-                                <span>{t.totalAmount}</span>
+                                <span>{cart.totalAmount}</span>
                                 <span className={styles.finalPrice}>
                                     {total} {selectedCountry.symbol}
                                 </span>
                             </div>
                             <div className={styles.rewardRow}>
                                 <span>
-                                    {t.reward} {bonuses} {t.bonusesLudenReward}
+                                    {cart.reward} {bonuses} {cart.bonusesLudenReward}
                                 </span>
                             </div>
                         </div>
 
-                        <button className={styles.paymentBtn}>{t.goToPayment}</button>
+                        <button className={styles.paymentBtn}>{cart.goToPayment}</button>
                     </div>
                 </div>
             </div>
