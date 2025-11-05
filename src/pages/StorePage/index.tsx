@@ -422,6 +422,7 @@ export const StorePage = () => {
                 onToggleAccountType={handleToggleAccountType}
                 onClearCart={handleClearCart}
                 language={language}
+                isDarkMode={isDarkMode}
             />
         </div>
     );
