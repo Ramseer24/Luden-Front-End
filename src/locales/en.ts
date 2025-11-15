@@ -39,7 +39,7 @@ export const en = {
     accountNotFound: '🤔 Account not found. Creating a new one...',
     accountCreated: '✅ Account created! Logging in...',
     orDivider: 'OR',
-    noAccount: "Don't have an account? Sign Up",
+    noAccount: "Don't have an account?",
   },
 
   // Auth - Registration Page
@@ -63,7 +63,7 @@ export const en = {
     accountExists: '📧 Account already exists. Logging in...',
     orDivider: 'OR',
     signUpButton: 'Sign Up',
-    haveAccount: 'Already have an account? Log in',
+    haveAccount: 'Already have an account?',
     googleLoginFailed: '❌ Google login failed.',
   },
 

@@ -1,10 +1,8 @@
-// src/pages/StorePage.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import styles from './styles.module.css';
 import { GameCard } from '../../components/GameCard';
 import { SaleCard } from '../../components/SaleCard';
 import { Cart } from '../../components/Cart';
-import { translations } from '../../locales';
 import {
     MdSearch,
     MdShoppingCart,
@@ -20,8 +18,10 @@ import type { CartItem } from '../../models';
 import { useTheme } from '../../context';
 import { useNavigate } from 'react-router-dom';
 import UserService from '../../services/UserService';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const mockGames: Game[] = [
+    // ... (твій масив ігор)
     {
         id: 1,
         title: 'Cyberpunk 2077',
@@ -115,23 +115,22 @@ const mockGames: Game[] = [
 ];
 
 export const StorePage = () => {
-    const [filteredGames, setFilteredGames] = useState(mockGames);
+    const [searchQuery, setSearchQuery] = useState('');
     const [activeNav, setActiveNav] = useState('Recommendations');
     const [showCategories, setShowCategories] = useState(false);
     const [showSale, setShowSale] = useState(false);
     const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
     const [selectedSale, setSelectedSale] = useState<string | null>(null);
-    const [language, setLanguage] = useState<'en' | 'uk'>('en');
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
-    const [username, setUsername] = useState<string>('nickname'); // Початкове значення
+    const [username, setUsername] = useState<string>('nickname');
 
     const { isDarkMode, toggleDarkMode } = useTheme();
-    const t = translations[language];
     const navigate = useNavigate();
+    const { t, language, setLanguage } = useTranslation();
 
-    // === Завантаження username при першому рендері ===
+    // === Завантаження username ===
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (token) {
@@ -143,12 +142,11 @@ export const StorePage = () => {
                 })
                 .catch(err => {
                     console.error('Failed to load username:', err);
-                    // Якщо помилка — залишаємо "nickname"
                 });
         }
     }, []);
 
-    // === ЖАНРЫ ===
+    // === ЖАНРИ ===
     const genres = [
         { key: 'openWorld', value: 'Open World', translationKey: 'openWorld' },
         { key: 'rpg', value: 'RPG', translationKey: 'rpg' },
@@ -160,28 +158,72 @@ export const StorePage = () => {
         { key: 'racing', value: 'Racing', translationKey: 'racing' },
     ];
 
-    const toggleFavorite = (id: number) => {
-        setFilteredGames(prev =>
-            prev.map(game =>
-                game.id === id ? { ...game, isFavorite: !game.isFavorite } : game
-            )
-        );
-    };
+    // === ПОШУК + ФІЛЬТРИ (useMemo) ===
+    const filteredGames = useMemo(() => {
+        let filtered = [...mockGames];
 
+        // 1. Пошук по назві
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(game =>
+                game.title.toLowerCase().includes(query)
+            );
+        }
+
+        // 2. Фільтр по жанру
+        if (selectedGenre) {
+            filtered = filtered.filter(g => g.genre === selectedGenre);
+        }
+
+        // 3. Фільтр по знижкам
+        if (selectedSale) {
+            const getFinalPrice = (game: Game): number => {
+                if (!game.price) return 999;
+                const basePriceStr = game.price.split(' (was')[0].trim();
+                const basePrice = parseInt(basePriceStr.replace(/[^\d]/g, ''), 10);
+                if (isNaN(basePrice)) return 999;
+                return game.discountPercent !== null
+                    ? Math.round(basePrice * (1 - game.discountPercent / 100))
+                    : basePrice;
+            };
+
+            if (selectedSale === 'All Games') {
+                filtered = filtered.filter(g => g.discountPercent !== null);
+            } else if (selectedSale === '50%+ Off') {
+                filtered = filtered.filter(g => g.discountPercent !== null && g.discountPercent >= 50);
+            } else if (selectedSale === '30%+ Off') {
+                filtered = filtered.filter(g =>
+                    g.discountPercent !== null && g.discountPercent >= 30 && g.discountPercent < 50
+                );
+            } else if (selectedSale === 'Under 10€') {
+                filtered = mockGames.filter(g => {
+                    const finalPrice = getFinalPrice(g);
+                    return finalPrice !== null && finalPrice > 0 && finalPrice < 10;
+                });
+            } else if (selectedSale === 'Free Games') {
+                filtered = filtered.filter(g => {
+                    const price = getFinalPrice(g);
+                    return price === 0;
+                });
+            }
+        }
+
+        return filtered;
+    }, [searchQuery, selectedGenre, selectedSale]);
+
+    // === ФІЛЬТРИ ===
     const handleNavClick = (nav: string) => {
         setActiveNav(nav);
         setShowCategories(false);
         setShowSale(false);
         setSelectedGenre(null);
         setSelectedSale(null);
-        setFilteredGames(mockGames);
     };
 
     const filterByGenre = (genreValue: string) => {
         setSelectedGenre(genreValue);
         setSelectedSale(null);
         setActiveNav('Categories');
-        setFilteredGames(mockGames.filter(g => g.genre === genreValue));
         setShowCategories(false);
     };
 
@@ -190,46 +232,11 @@ export const StorePage = () => {
         setSelectedGenre(null);
         setActiveNav('Sale');
         setShowSale(false);
-
-        let filtered: Game[] = mockGames;
-
-        const getFinalPrice = (game: Game): number | null => {
-            if (!game.price) return null;
-            const basePriceStr = game.price.split(' (was')[0].trim();
-            const basePrice = parseInt(basePriceStr.replace(/[^\d]/g, ''), 10);
-            if (isNaN(basePrice)) return null;
-            return game.discountPercent !== null
-                ? Math.round(basePrice * (1 - game.discountPercent / 100))
-                : basePrice;
-        };
-
-        if (option === 'All Games') {
-            filtered = mockGames.filter(g => g.discountPercent !== null);
-        } else if (option === '50%+ Off') {
-            filtered = mockGames.filter(g => g.discountPercent !== null && g.discountPercent >= 50);
-        } else if (option === '30%+ Off') {
-            filtered = mockGames.filter(g =>
-                g.discountPercent !== null && g.discountPercent >= 30 && g.discountPercent < 50
-            );
-        } else if (option === 'Under 10€') {
-            filtered = mockGames.filter(g => {
-                const finalPrice = getFinalPrice(g);
-                return finalPrice !== null && finalPrice > 0 && finalPrice < 10;
-            });
-        } else if (option === 'Free Games') {
-            filtered = mockGames.filter(g => {
-                const finalPrice = getFinalPrice(g);
-                const priceText = g.price?.trim().toLowerCase();
-                return finalPrice === 0 || priceText === 'free' || priceText === '0 €' || !g.price;
-            });
-        }
-
-        setFilteredGames(filtered);
     };
 
     const isSaleView = activeNav === 'Sale' || !!selectedSale;
 
-    // === CART HANDLERS ===
+    // === CART ===
     const handleAddToCart = (game: Game) => {
         const existingItem = cartItems.find(item => item.game.id === game.id);
         if (existingItem) {
@@ -265,6 +272,11 @@ export const StorePage = () => {
         setCartItems([]);
     };
 
+    const toggleFavorite = () => {
+        // Не впливає на фільтри — лише локально
+        // (можна додати в БД пізніше)
+    };
+
     return (
         <div className={`${styles.storePage} ${isDarkMode ? styles.dark : ''}`}>
             {/* === Header === */}
@@ -273,30 +285,41 @@ export const StorePage = () => {
                     <img src="/src/assets/Luden-logo-key.png" alt="Luden Key" className={styles.logoKey} />
                     <img src="/src/assets/luden-logo.svg" alt="Luden" className={styles.logoSvg} />
                 </div>
+
+                {/* === ПОШУК === */}
                 <div className={styles.searchBar}>
                     <MdSearch className={styles.searchIcon} />
-                    <input type="text" placeholder={t.searchPlaceholder} />
+                    <input
+                        type="text"
+                        placeholder={t('searchPlaceholder')}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        aria-label={t('aria.searchGames')}
+                    />
                 </div>
+
                 <div className={styles.headerActions}>
                     <button
-                        aria-label="Toggle theme"
+                        aria-label={t('aria.toggleTheme')}
                         onClick={toggleDarkMode}
                     >
-                        {isDarkMode ? (
-                            <MdNightlight className={styles.sunIcon} />
-                        ) : (
-                            <MdWbSunny className={styles.sunIcon} />
-                        )}
+                        {isDarkMode ? <MdNightlight className={styles.sunIcon} /> : <MdWbSunny className={styles.sunIcon} />}
                     </button>
-                    <button aria-label="Shopping cart" onClick={() => setIsCartOpen(true)}>
+
+                    <button
+                        aria-label={t('aria.shoppingCart')}
+                        onClick={() => setIsCartOpen(true)}
+                    >
                         <MdShoppingCart />
                         {cartItems.length > 0 && (
                             <span className={styles.cartBadge}>{cartItems.length}</span>
                         )}
                     </button>
+
+                    {/* === Language Dropdown === */}
                     <div className={styles.languageDropdown}>
                         <button
-                            aria-label="Toggle language"
+                            aria-label={t('aria.toggleLanguage')}
                             onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
                         >
                             <MdLanguage />
@@ -310,7 +333,7 @@ export const StorePage = () => {
                                         setShowLanguageDropdown(false);
                                     }}
                                 >
-                                    English
+                                    {t('language.english')}
                                 </button>
                                 <button
                                     className={`${styles.languageOption} ${language === 'uk' ? styles.active : ''}`}
@@ -319,16 +342,16 @@ export const StorePage = () => {
                                         setShowLanguageDropdown(false);
                                     }}
                                 >
-                                    Українська
+                                    {t('language.ukrainian')}
                                 </button>
                             </div>
                         )}
                     </div>
 
-                    {/* === Кнопка з реальним username + перехід на профіль === */}
                     <button
                         className={styles.profileBtn}
                         onClick={() => navigate('/profile')}
+                        aria-label={t('aria.profile')}
                     >
                         <MdAccountCircle />
                         <span>{username}</span>
@@ -342,7 +365,7 @@ export const StorePage = () => {
                     className={activeNav === 'Recommendations' ? styles.navActive : ''}
                     onClick={() => handleNavClick('Recommendations')}
                 >
-                    {t.recommendations}
+                    {t('recommendations')}
                 </button>
 
                 <div className={styles.dropdown}>
@@ -354,7 +377,7 @@ export const StorePage = () => {
                             setActiveNav('Categories');
                         }}
                     >
-                        {t.categories} <MdKeyboardArrowDown className={styles.arrow} />
+                        {t('categories')} <MdKeyboardArrowDown className={styles.arrow} />
                     </button>
                     {showCategories && (
                         <div className={styles.dropdownMenu}>
@@ -364,7 +387,7 @@ export const StorePage = () => {
                                     className={styles.dropdownItem}
                                     onClick={() => filterByGenre(g.value)}
                                 >
-                                    <span>{t.genres[g.translationKey as keyof typeof t.genres]}</span>
+                                    <span>{t(`genres.${g.translationKey}`)}</span>
                                     {selectedGenre === g.value && <MdCheck className={styles.checkIcon} />}
                                 </button>
                             ))}
@@ -381,16 +404,16 @@ export const StorePage = () => {
                             setActiveNav('Sale');
                         }}
                     >
-                        {t.sale} <MdKeyboardArrowDown className={styles.arrow} />
+                        {t('sale')} <MdKeyboardArrowDown className={styles.arrow} />
                     </button>
                     {showSale && (
                         <div className={styles.dropdownMenu}>
                             {[
-                                { key: 'All Games', translation: t.allGames },
-                                { key: '50%+ Off', translation: t.off50 },
-                                { key: '30%+ Off', translation: t.off30 },
-                                { key: 'Under 10€', translation: t.under10 },
-                                { key: 'Free Games', translation: t.freeGames },
+                                { key: 'All Games', translation: t('allGames') },
+                                { key: '50%+ Off', translation: t('off50') },
+                                { key: '30%+ Off', translation: t('off30') },
+                                { key: 'Under 10€', translation: t('under10') },
+                                { key: 'Free Games', translation: t('freeGames') },
                             ].map(option => (
                                 <button
                                     key={option.key}
@@ -409,8 +432,8 @@ export const StorePage = () => {
             {/* === Game Grid === */}
             <main className={styles.gameGrid}>
                 {filteredGames.length === 0 ? (
-                    <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#666' }}>
-                        {t.noGames}
+                    <p className={styles.noGames}>
+                        {t('noGames')}
                     </p>
                 ) : (
                     filteredGames.map(game => {
@@ -453,3 +476,5 @@ export const StorePage = () => {
         </div>
     );
 };
+
+export default StorePage;

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import styles from './styles.module.css';
 import { usePalette } from 'color-thief-react';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
     MdArrowBack,
     MdOutlineNotifications,
@@ -29,6 +30,7 @@ import { ProductCard } from '../../components/ProductCard';
 import { useTheme } from '../../context';
 
 export const ProfilePage = () => {
+    const { t } = useTranslation(); // ← ДОДАНО
     const [user, setUser] = useState<User | null>(null);
     const [bills, setBills] = useState<Bill[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
@@ -40,12 +42,10 @@ export const ProfilePage = () => {
     const settingsRef = useRef<HTMLDivElement>(null);
     const switchAccountRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('My library');
+    const [activeTab, setActiveTab] = useState('myLibrary'); // ← Змінено ключ
 
-    // НОВЕ: URL + ключ для примусового оновлення
     const [avatarUrl, setAvatarUrl] = useState<string>('');
     const [avatarVersion, setAvatarVersion] = useState<number>(0);
-
     const [palette, setPalette] = useState<string[] | null>(null);
     const { isDarkMode } = useTheme();
 
@@ -138,13 +138,30 @@ export const ProfilePage = () => {
                 if (result && result.avatarUrl) {
                     const newUrl = `${result.avatarUrl}?t=${Date.now()}`;
                     setUser(prev => prev ? { ...prev, avatar: newUrl } : null);
-                    setAvatarVersion(prev => prev + 1); // Примусово оновити usePalette
-                    alert('Avatar uploaded successfully!');
+                    setAvatarVersion(prev => prev + 1);
+                    alert(t('profile.avatarUploaded')); // ← ПЕРЕКЛАД
                 }
             } catch (error) {
                 console.error('Error uploading avatar:', error);
-                alert('Failed to upload avatar');
+                alert(t('profile.avatarUploadFailed')); // ← ПЕРЕКЛАД
             }
+        }
+    };
+
+    const handleSwitchAccount = async (email: string, password: string) => {
+        try {
+            const result = await UserService.login({ email, password });
+            if (result?.token) {
+                localStorage.setItem('auth user', result.token);
+                await fetchUserData();
+                setIsSwitchAccountOpen(false);
+                alert(t('profile.switchedToAccount', { email })); // ← ПЕРЕКЛАД + ПАРАМЕТР
+            } else {
+                alert(t('profile.switchAccountFailed')); // ← ПЕРЕКЛАД
+            }
+        } catch (error) {
+            console.error('Error switching account:', error);
+            alert(t('profile.switchAccountError')); // ← ПЕРЕКЛАД
         }
     };
 
@@ -163,22 +180,6 @@ export const ProfilePage = () => {
         setIsSettingsOpen(false);
     };
 
-    const handleSwitchAccount = async (email: string, password: string) => {
-        try {
-            const result = await UserService.login({ email, password });
-            if (result?.token) {
-                localStorage.setItem('authToken', result.token);
-                await fetchUserData();
-                setIsSwitchAccountOpen(false);
-                alert(`Switched to account: ${email}`);
-            } else {
-                alert('Failed to switch account');
-            }
-        } catch (error) {
-            console.error('Error switching account:', error);
-            alert('An error occurred while switching account');
-        }
-    };
 
     const handleAddNewAccount = () => {
         setIsSwitchAccountOpen(false);
@@ -221,7 +222,7 @@ export const ProfilePage = () => {
     }, []);
 
     if (!user) {
-        return <div>Loading...</div>;
+        return <div>{t('profile.loading')}</div>; // ← ПЕРЕКЛАД
     }
 
     return (
@@ -245,7 +246,7 @@ export const ProfilePage = () => {
 
             <header className={styles.header}>
                 <button className={`${styles.headerButton} ${styles.backButton}`} onClick={() => navigate('/store')}>
-                    <MdArrowBack /> Back to store
+                    <MdArrowBack /> {t('backToStore')} {/* ← ПЕРЕКЛАД */}
                 </button>
                 <div className={styles.headerIcons}>
                     <button className={styles.headerButton}><MdOutlineNotifications /></button>
@@ -256,13 +257,13 @@ export const ProfilePage = () => {
                         {isSettingsOpen && (
                             <ul className={styles.dropdownMenu}>
                                 <li className={styles.dropdownItem} onClick={handleEditProfile}>
-                                    <MdEdit /> Edit profile
+                                    <MdEdit /> {t('profile.editProfile')} {/* ← ПЕРЕКЛАД */}
                                 </li>
                                 <li className={styles.dropdownItem} onClick={handleSwitchAccountToggle}>
-                                    <MdSwitchAccount /> Switch account
+                                    <MdSwitchAccount /> {t('profile.switchAccount')} {/* ← ПЕРЕКЛАД */}
                                 </li>
                                 <li className={styles.dropdownItem} onClick={handleLogout}>
-                                    <MdLogout /> Logout
+                                    <MdLogout /> {t('profile.logout')} {/* ← ПЕРЕКЛАД */}
                                 </li>
                             </ul>
                         )}
@@ -274,10 +275,10 @@ export const ProfilePage = () => {
                                     className={`${styles.dropdownItem} ${styles.currentAccount}`}
                                     onClick={() => handleSwitchAccount(user.email, '')}
                                 >
-                                    <MdAccountCircle /> {user.username} (Current)
+                                    <MdAccountCircle /> {user.username} {t('profile.current')} {/* ← ПЕРЕКЛАД */}
                                 </li>
                                 <li className={styles.dropdownItem} onClick={handleAddNewAccount}>
-                                    <MdAdd /> Add new account
+                                    <MdAdd /> {t('profile.addNewAccount')} {/* ← ПЕРЕКЛАД */}
                                 </li>
                             </ul>
                         </div>
@@ -286,17 +287,14 @@ export const ProfilePage = () => {
             </header>
 
             <main>
-                <div
-                    className={styles.userCard}
-                    style={{ background: userCardGradient }}
-                >
+                <div className={styles.userCard} style={{ background: userCardGradient }}>
                     <div className={styles.avatarContainer} onClick={handleAvatarClick}>
                         {avatarUrl ? (
                             <img
                                 src={avatarUrl}
-                                alt="User Avatar"
+                                alt={t('aria.profileAvatar') || 'User Avatar'} // ← ПЕРЕКЛАД (опціонально)
                                 className={styles.avatarImage}
-                                key={avatarVersion} // Примусово оновити img
+                                key={avatarVersion}
                             />
                         ) : (
                             <MdAccountCircle className={styles.avatarIcon} />
@@ -312,39 +310,39 @@ export const ProfilePage = () => {
 
                 <nav className={styles.navigation}>
                     <button
-                        className={`${styles.navButton} ${activeTab === 'My library' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('My library')}
+                        className={`${styles.navButton} ${activeTab === 'myLibrary' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('myLibrary')}
                     >
-                        <MdSportsEsports /> My library
+                        <MdSportsEsports /> {t('profile.myLibrary')} {/* ← ПЕРЕКЛАД */}
                     </button>
                     <button
-                        className={`${styles.navButton} ${activeTab === 'Bonuses' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('Bonuses')}
+                        className={`${styles.navButton} ${activeTab === 'bonuses' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('bonuses')}
                     >
-                        <MdEmojiEvents /> Bonuses
+                        <MdEmojiEvents /> {t('profile.bonuses')} {/* ← ПЕРЕКЛАД */}
                     </button>
                     <button
-                        className={`${styles.navButton} ${activeTab === 'Bills' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('Bills')}
+                        className={`${styles.navButton} ${activeTab === 'bills' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('bills')}
                     >
-                        <MdCardGiftcard /> Bills
+                        <MdCardGiftcard /> {t('profile.bills')} {/* ← ПЕРЕКЛАД */}
                     </button>
                     <button
-                        className={`${styles.navButton} ${activeTab === 'Favorites' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('Favorites')}
+                        className={`${styles.navButton} ${activeTab === 'favorites' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('favorites')}
                     >
-                        <MdStar /> Favorites
+                        <MdStar /> {t('profile.favorites')} {/* ← ПЕРЕКЛАД */}
                     </button>
                 </nav>
 
                 <div className={styles.contentArea}>
-                    {activeTab === 'My library' && (
+                    {activeTab === 'myLibrary' && (
                         <div className={styles.gameGrid}>
                             {products.length === 0 ? (
                                 <div className={styles.emptyState}>
                                     <MdSportsEsports className={styles.emptyIcon} />
-                                    <p>No games in your library</p>
-                                    <p className={styles.emptyHint}>Purchase games to add them to your library</p>
+                                    <p>{t('profile.noGamesInLibrary')}</p>
+                                    <p className={styles.emptyHint}>{t('profile.purchaseGames')}</p>
                                 </div>
                             ) : (
                                 products.map((product) => (
@@ -353,13 +351,13 @@ export const ProfilePage = () => {
                             )}
                         </div>
                     )}
-                    {activeTab === 'Bonuses' && (
+                    {activeTab === 'bonuses' && (
                         <div className={styles.bonusList}>
                             {bonuses.length === 0 ? (
                                 <div className={styles.emptyState}>
                                     <MdEmojiEvents className={styles.emptyIcon} />
-                                    <p>No bonuses available</p>
-                                    <p className={styles.emptyHint}>Complete achievements to earn bonuses</p>
+                                    <p>{t('profile.noBonuses')}</p>
+                                    <p className={styles.emptyHint}>{t('profile.completeAchievements')}</p>
                                 </div>
                             ) : (
                                 bonuses.map((bonus) => (
@@ -371,13 +369,13 @@ export const ProfilePage = () => {
                             )}
                         </div>
                     )}
-                    {activeTab === 'Bills' && (
+                    {activeTab === 'bills' && (
                         <div className={styles.gameGrid}>
                             {bills.length === 0 ? (
                                 <div className={styles.emptyState}>
                                     <MdCardGiftcard className={styles.emptyIcon} />
-                                    <p>No bills available</p>
-                                    <p className={styles.emptyHint}>Browse the store to make a purchase</p>
+                                    <p>{t('profile.noBills')}</p>
+                                    <p className={styles.emptyHint}>{t('profile.browseStore')}</p>
                                 </div>
                             ) : (
                                 bills.map((bill) => (
@@ -386,13 +384,13 @@ export const ProfilePage = () => {
                             )}
                         </div>
                     )}
-                    {activeTab === 'Favorites' && (
+                    {activeTab === 'favorites' && (
                         <div className={styles.gameGrid}>
                             {favorites.length === 0 ? (
                                 <div className={styles.emptyState}>
                                     <MdStar className={styles.emptyIcon} />
-                                    <p>No favorites yet</p>
-                                    <p className={styles.emptyHint}>Add games to your favorites list</p>
+                                    <p>{t('profile.noFavorites')}</p>
+                                    <p className={styles.emptyHint}>{t('profile.addToFavorites')}</p>
                                 </div>
                             ) : (
                                 favorites.map((game) => (
